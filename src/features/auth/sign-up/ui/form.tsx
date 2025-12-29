@@ -1,7 +1,22 @@
 import { notifyError, notifySuccess } from "@/services/notification"
 import { Button } from "@/shared/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/shared/ui/field"
 import { Input } from "@/shared/ui/input"
+import { PhoneInput } from "@/shared/ui/phone-input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select"
 import { useForm } from "@tanstack/react-form"
 import { useNavigate } from "@tanstack/react-router"
 import { useServerFn } from "@tanstack/react-start"
@@ -144,6 +159,74 @@ export function SignUpForm() {
                   aria-invalid={isInvalid}
                 />
                 {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            )
+          }}
+        />
+        <form.Field
+          name="phone"
+          children={(field) => {
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid
+
+            return (
+              <Field data-invalid={isInvalid}>
+                <FieldLabel htmlFor={field.name}>Phone number</FieldLabel>
+                <PhoneInput
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(value) => field.handleChange(value)}
+                  aria-invalid={isInvalid}
+                />
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
+              </Field>
+            )
+          }}
+        />
+        <form.Field
+          name="preferred_language"
+          children={(field) => {
+            const spokenLanguages = [
+              { label: "English", value: "en" },
+              { label: "O'zbekcha", value: "uz" },
+              { label: "Русский", value: "ru" },
+            ] as const
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid
+            return (
+              <Field orientation="responsive" data-invalid={isInvalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor={field.name}>
+                    Preferred Language
+                  </FieldLabel>
+                  <FieldDescription>
+                    For best results, select the language you speak.
+                  </FieldDescription>
+                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                </FieldContent>
+                <Select
+                  name={field.name}
+                  value={field.state.value}
+                  onValueChange={(value) => field.handleChange(value ?? "")}
+                  items={spokenLanguages}
+                >
+                  <SelectTrigger
+                    className="min-w-[120px]"
+                    id={field.name}
+                    aria-invalid={isInvalid}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {spokenLanguages.map((language) => (
+                      <SelectItem key={language.value} value={language.value}>
+                        {language.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )
           }}
