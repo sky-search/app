@@ -1,3 +1,4 @@
+import { logOut } from "@/shared/lib/auth"
 import { cn } from "@/shared/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import {
@@ -9,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import { Link, useNavigate } from "@tanstack/react-router"
+import { useServerFn } from "@tanstack/react-start"
 
 interface UserProfileProps {
   user?: {
@@ -20,6 +22,7 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ user, isCollapsed }: UserProfileProps) {
+  const logOutFn = useServerFn(logOut)
   const navigate = useNavigate()
 
   const defaultUser = user || {
@@ -33,8 +36,8 @@ export function UserProfile({ user, isCollapsed }: UserProfileProps) {
     .join("")
     .toUpperCase()
 
-  const handleLogout = () => {
-    // Handle logout logic
+  async function handleLogout() {
+    await logOutFn()
     navigate({ to: "/auth/login" })
   }
 

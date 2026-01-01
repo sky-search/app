@@ -1,28 +1,33 @@
-import type { BeforeErrorHook, BeforeRequestHook } from "ky"
+import type {
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios"
 import { getSessionToken } from "../lib/auth"
-import type { BaseApiError } from "../types/http"
 
-export const beforeErrorHook: BeforeErrorHook = async (error: BaseApiError) => {
-  const { response } = error
-  if (response) {
-    const body = await response.json()
-    error.message = body.detail
-  }
+export const setupInterceptors = (instance: AxiosInstance) => {
+  instance.interceptors.request.use(
+    async (config: InternalAxiosRequestConfig) => {
+      const result = await getSessionToken()
+      if (result.success) {
+        config.headers.Authorization = `Bearer ${result.data}`
+      }
+      return config
+    },
+  )
 
-  return error
-}
-
-export const authHeaderHook: BeforeRequestHook = async (req) => {
-  const result = await getSessionToken()
-
-  if (result.success) {
-    return new Request(req, {
-      headers: {
-        ...req.headers,
-        Authorization: result.success ? `Bearer ${result.data}` : undefined,
-      },
-    })
-  }
-
-  return req
+  instance.interceptors.response.use(
+    (response: AxiosResponse) => response,
+    async (error: AxiosError<any>) => {
+      if (
+        error.response?.data &&
+        typeof error.response.data === "object" &&
+        "detail" in error.response.data
+      ) {
+        error.message = (error.response.data as any).detail
+      }
+      return Promise.reject(error)
+    },
+  )
 }
