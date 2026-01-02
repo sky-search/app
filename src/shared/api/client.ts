@@ -1,25 +1,31 @@
-import ky from "ky"
-import { authHeaderHook, beforeErrorHook } from "./hooks"
+import axios from "axios"
+import { setupInterceptors } from "./hooks"
 
-export const apiClient = ky.create({
-  prefixUrl: import.meta.env.VITE_API_URL,
-  hooks: {
-    beforeRequest: [authHeaderHook],
-    beforeError: [beforeErrorHook],
-  },
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
-    accept: "application/json",
+    Accept: "application/json",
   },
 })
 
-export const publicApiClient = ky.create({
-  prefixUrl: import.meta.env.VITE_API_URL,
+setupInterceptors(apiClient)
+
+export const publicApiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
-    accept: "application/json",
-  },
-  hooks: {
-    beforeError: [beforeErrorHook],
+    Accept: "application/json",
   },
 })
+
+// Public client still gets the response interceptor for error formatting
+publicApiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.data?.detail) {
+      error.message = error.response.data.detail
+    }
+    return Promise.reject(error)
+  },
+)

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/auth")({
     const result = await getSessionToken()
     if (result.success)
       throw redirect({
-        to: "/dashboard",
+        to: "/",
       })
   },
   component: RouteComponent,

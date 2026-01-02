@@ -1,8 +1,9 @@
-import { apiClient } from "@/shared/api/client"
+import type { User } from "@/entities/user"
+import { typeSafeRequest } from "@/shared/lib/http"
 
 export async function getCurrentUser() {
-  const response = await apiClient.get<{ id: number; email: string }>(
-    "api/v1/auth/me",
-  )
-  return response.json()
+  return await typeSafeRequest<null, null, User>({
+    method: "get",
+    url: "/api/v1/auth/me",
+  })
 }

@@ -1,6 +1,5 @@
 import { getCurrentUser } from "@/services/user"
 import { useAppSession } from "@/shared/lib/session"
-import { redirect } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 
 // Get current user
@@ -13,17 +12,15 @@ export const getCurrentUserFn = createServerFn({ method: "GET" }).handler(
       return null
     }
     const result = await getCurrentUser()
+    if (result.isErr()) return null
 
-    return result
+    return result.value
   },
 )
 
 export const logOut = createServerFn({ method: "POST" }).handler(async () => {
   const session = await useAppSession()
   session.clear()
-  throw redirect({
-    to: "/auth/login",
-  })
 })
 
 export const getSessionToken = createServerFn({ method: "GET" }).handler(
