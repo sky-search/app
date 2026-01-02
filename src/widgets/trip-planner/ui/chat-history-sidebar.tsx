@@ -102,7 +102,7 @@ export function ChatHistorySidebar() {
               to="/chat/$chatId"
               params={{ chatId: chat.session_id }}
               className={cn(
-                "w-full text-left px-4 py-3 rounded-xl transition-all group",
+                "w-full text-left px-4 py-3 rounded-xl transition-all group block",
                 selectedChatId === chat.session_id
                   ? "bg-primary/10 text-primary shadow-sm"
                   : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
