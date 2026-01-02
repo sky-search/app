@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/shared/lib/utils"
 import { Textarea } from "@/shared/ui/textarea"
 import {
   Tooltip,
@@ -7,7 +8,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip"
-import { cn } from "@/shared/lib/utils"
 import React, {
   createContext,
   useContext,
@@ -94,7 +94,7 @@ function PromptInput({
           className={cn(
             "border-input bg-background cursor-text rounded-3xl border p-2 shadow-xs",
             disabled && "cursor-not-allowed opacity-60",
-            className
+            className,
           )}
           {...props}
         >
@@ -169,8 +169,8 @@ function PromptInputTextarea({
       onChange={handleChange}
       onKeyDown={handleKeyDown}
       className={cn(
-        "text-primary min-h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
-        className
+        "text-foreground min-h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+        className,
       )}
       rows={1}
       disabled={disabled}
@@ -226,7 +226,7 @@ function PromptInputAction({
 
 export {
   PromptInput,
-  PromptInputTextarea,
-  PromptInputActions,
   PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
 }

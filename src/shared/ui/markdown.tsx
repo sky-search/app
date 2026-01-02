@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils"
 import { marked } from "marked"
 import { memo, useId, useMemo } from "react"
-import ReactMarkdown, { Components } from "react-markdown"
+import ReactMarkdown, { type Components } from "react-markdown"
 import remarkBreaks from "remark-breaks"
 import remarkGfm from "remark-gfm"
 import { CodeBlock, CodeBlockCode } from "./code-block"
@@ -35,7 +35,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
         <span
           className={cn(
             "bg-primary-foreground rounded-sm px-1 font-mono text-sm",
-            className
+            className,
           )}
           {...props}
         >
@@ -76,7 +76,7 @@ const MemoizedMarkdownBlock = memo(
   },
   function propsAreEqual(prevProps, nextProps) {
     return prevProps.content === nextProps.content
-  }
+  },
 )
 
 MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock"

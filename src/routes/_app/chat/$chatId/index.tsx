@@ -1,3 +1,4 @@
+import { getConversationById } from "@/services/conversation"
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { ChatInterface, ItineraryPreview } from "@/widgets/trip-planner/ui"
@@ -7,6 +8,15 @@ import { useState } from "react"
 
 export const Route = createFileRoute("/_app/chat/$chatId/")({
   component: RouteComponent,
+  async loader(ctx) {
+    const { chatId } = ctx.params
+    const result = await getConversationById({
+      id: chatId,
+    })
+    return {
+      chat: result,
+    }
+  },
 })
 
 function RouteComponent() {

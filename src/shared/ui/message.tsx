@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import {
   Tooltip,
@@ -5,7 +6,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/ui/tooltip"
-import { cn } from "@/shared/lib/utils"
 import { Markdown } from "./markdown"
 
 export type MessageProps = {
@@ -58,8 +58,9 @@ const MessageContent = ({
   ...props
 }: MessageContentProps) => {
   const classNames = cn(
-    "rounded-lg p-2 text-foreground bg-secondary prose break-words whitespace-normal",
-    className
+    "prose dark:prose-invert",
+    "rounded-lg p-2 text-foreground bg-secondary break-words whitespace-normal",
+    className,
   )
 
   return markdown ? (
@@ -117,4 +118,4 @@ const MessageAction = ({
   )
 }
 
-export { Message, MessageAvatar, MessageContent, MessageActions, MessageAction }
+export { Message, MessageAction, MessageActions, MessageAvatar, MessageContent }

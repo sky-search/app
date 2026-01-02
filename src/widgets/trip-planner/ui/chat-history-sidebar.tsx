@@ -1,8 +1,11 @@
-import { cn } from "@/shared/lib/utils"
+import { getConversationList } from "@/services/conversation"
+import { cn, formatStringDate } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
+import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { History, MapPin, MessageSquare, Search } from "lucide-react"
 import { useState } from "react"
 
@@ -27,11 +30,21 @@ const mockChats: ChatHistoryItem[] = [
 
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
+  const { data } = useQuery({
+    queryKey: ["chats"],
+    queryFn: async () => {
+      const result = await getConversationList()
+      if (result.isErr()) throw new Error((await result.error).message)
+      return result.value
+    },
+  })
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
 
-  const filteredChats = mockChats.filter((chat) =>
+  const filteredChats = data?.conversations?.filter?.((chat) =>
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  console.log(data)
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -83,14 +96,14 @@ export function ChatHistorySidebar() {
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             Recent Chats
           </div>
-          {filteredChats.map((chat) => (
-            <button
-              key={chat.id}
-              type="button"
-              onClick={() => setSelectedChatId(chat.id)}
+          {filteredChats?.map((chat) => (
+            <Link
+              key={chat.session_id}
+              to="/chat/$chatId"
+              params={{ chatId: chat.session_id }}
               className={cn(
                 "w-full text-left px-4 py-3 rounded-xl transition-all group",
-                selectedChatId === chat.id
+                selectedChatId === chat.session_id
                   ? "bg-primary/10 text-primary shadow-sm"
                   : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
               )}
@@ -100,7 +113,7 @@ export function ChatHistorySidebar() {
                   <div
                     className={cn(
                       "size-2 rounded-full",
-                      selectedChatId === chat.id
+                      selectedChatId === chat.session_id
                         ? "bg-primary"
                         : "bg-muted-foreground/30 group-hover:bg-primary/50",
                     )}
@@ -110,16 +123,13 @@ export function ChatHistorySidebar() {
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
-                  {chat.timestamp.toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatStringDate(chat.last_message_at ?? "")}
                 </span>
               </div>
-            </button>
+            </Link>
           ))}
 
-          {filteredChats.length === 0 && (
+          {filteredChats?.length === 0 && (
             <div className="p-8 text-center space-y-2">
               <div className="size-12 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto opacity-40">
                 <MessageSquare className="size-6 text-muted-foreground" />
