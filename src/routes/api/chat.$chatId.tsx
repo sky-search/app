@@ -1,4 +1,10 @@
 import { startChatMessageStream } from "@/services/chat"
+import {
+  SuggestionsParser,
+  ThinkingParser,
+  TokenParser,
+} from "@/shared/lib/event-parser"
+import { streamDecoder } from "@/shared/lib/stream-decoder"
 import { type StreamChunk, toServerSentEventsStream } from "@tanstack/ai"
 import { createFileRoute } from "@tanstack/react-router"
 
@@ -7,33 +13,18 @@ import { createFileRoute } from "@tanstack/react-router"
  * into AsyncIterable<StreamChunk> for TanStack AI
  */
 export async function* responseToStreamChunks(
-  streamInput: any,
+  streamInput: Response,
 ): AsyncIterable<StreamChunk> {
-  const decoder = new TextDecoder()
   let buffer = ""
-
-  // Normalize input to an async iterable
-  let iterable: AsyncIterable<Uint8Array | string>
-  if (streamInput instanceof Response) {
-    if (!streamInput.body) throw new Error("Response body is missing")
-    iterable = streamInput.body as any
-  } else if (
-    streamInput &&
-    typeof streamInput[Symbol.asyncIterator] === "function"
-  ) {
-    iterable = streamInput
-  } else {
-    throw new Error("Invalid stream input")
-  }
-
   let currentEvent = ""
+  const iterable: AsyncIterable<Uint8Array | string> = streamInput.body as any
 
   try {
     for await (const value of iterable) {
       const chunkStr =
         typeof value === "string"
           ? value
-          : decoder.decode(value, { stream: true })
+          : streamDecoder.decode(value, { stream: true })
       buffer += chunkStr
 
       const lines = buffer.split("\n")
@@ -44,66 +35,20 @@ export async function* responseToStreamChunks(
           currentEvent = line.slice(7).trim()
         } else if (line.startsWith("data: ")) {
           const data = line.slice(6).trim()
-
           if (data === "[DONE]") return
 
-          const id = crypto.randomUUID()
-          const timestamp = Date.now()
-
-          try {
-            if (currentEvent === "token") {
-              const json = JSON.parse(data)
-              yield {
-                type: "content",
-                delta: json.content || "",
-                id,
-                timestamp,
-              } as any
-            } else if (currentEvent === "thinking") {
-              const json = JSON.parse(data)
-              const steps = json.steps || (json.content ? [json.content] : [])
-              const content = Array.isArray(steps)
-                ? steps.join("\n")
-                : String(steps)
-              yield {
-                type: "thinking",
-                id,
-                timestamp,
-                delta: content,
-                content: content,
-                model: "",
-              } as any
-            } else if (currentEvent === "suggestions") {
-              const json = JSON.parse(data)
-              yield {
-                type: "metadata" as any,
-                value: { suggestions: json },
-                id,
-                timestamp,
-                delta: "",
-                content: "",
-                model: "",
-              } as any
-            } else if (!currentEvent) {
-              try {
-                const json = JSON.parse(data)
-                yield {
-                  type: "content",
-                  delta: json.delta || json.content || "",
-                  id,
-                  timestamp,
-                } as any
-              } catch {
-                yield {
-                  type: "content",
-                  delta: data,
-                  id,
-                  timestamp,
-                } as any
-              }
-            }
-          } catch (e) {
-            console.error("Error parsing SSE data chunk:", e, data)
+          if (currentEvent === "token") {
+            const tokenParser = TokenParser.new()
+            const json = tokenParser.parse(data)
+            yield tokenParser.format(json)
+          } else if (currentEvent === "thinking") {
+            const thinkingParser = ThinkingParser.new()
+            const json = thinkingParser.parse(data)
+            yield thinkingParser.format(json)
+          } else if (currentEvent === "suggestions") {
+            const suggestionsParser = SuggestionsParser.new()
+            const json = suggestionsParser.parse(data)
+            yield suggestionsParser.format(json)
           }
         } else if (line.trim() === "") {
           currentEvent = ""
@@ -146,7 +91,6 @@ export const Route = createFileRoute("/api/chat/$chatId")({
           })
 
           if (response.isErr()) {
-            console.error("Error starting chat message stream:", response.error)
             return new Response(
               JSON.stringify({ error: (response.error as any).message }),
               {
@@ -164,7 +108,6 @@ export const Route = createFileRoute("/api/chat/$chatId")({
 
           return new Response(sseStream)
         } catch (error) {
-          console.error("API Chat Error:", error)
           return new Response(
             JSON.stringify({
               error:
