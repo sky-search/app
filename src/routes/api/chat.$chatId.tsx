@@ -1,4 +1,5 @@
 import { startChatMessageStream } from "@/services/chat"
+import { getCurrentUser } from "@/services/user"
 import {
   SuggestionsParser,
   ThinkingParser,
@@ -67,6 +68,13 @@ export const Route = createFileRoute("/api/chat/$chatId")({
       POST: async ({ request, params }) => {
         try {
           const { messages } = await request.json()
+          const currentUser = await getCurrentUser()
+          if (currentUser.isErr()) {
+            return new Response(JSON.stringify(currentUser.error), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            })
+          }
 
           // Get the last user message content
           const lastMessage = messages[messages.length - 1]
@@ -87,6 +95,7 @@ export const Route = createFileRoute("/api/chat/$chatId")({
               message: userContent,
               session_id: params.chatId,
               stream: true,
+              user_id: currentUser.value.id,
             },
           })
 

@@ -99,7 +99,7 @@ export function typeSafeRequest<TBody, TParams, TResult>(
     return response.data
   }
 
-  return ResultAsync.fromPromise(reqFn(), async (error): Promise<ApiError> => {
+  return ResultAsync.fromPromise(reqFn(), (error): ApiError => {
     if (axios.isAxiosError(error)) {
       const data = error.response?.data as Record<string, unknown> | undefined
       const detail = data?.detail as any

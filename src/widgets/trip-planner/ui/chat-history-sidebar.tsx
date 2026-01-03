@@ -1,21 +1,21 @@
 import { getConversationList } from "@/services/conversation"
 import { cn, formatStringDate } from "@/shared/lib/utils"
-import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { History, MapPin, MessageSquare, Search } from "lucide-react"
+import { History, MessageSquare, Search } from "lucide-react"
 import { useState } from "react"
+import { NewChatButton } from "./new-chat-button"
 
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
   const { data } = useQuery({
-    queryKey: ["chats"],
+    queryKey: ["conversations"],
     queryFn: async () => {
       const result = await getConversationList()
-      if (result.isErr()) throw new Error((await result.error).message)
+      if (result.isErr()) throw new Error(result.error.message)
       return result.value
     },
   })
@@ -46,25 +46,7 @@ export function ChatHistorySidebar() {
           />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1 gap-2 rounded-xl h-10 border-muted-foreground/10 hover:border-primary/30"
-            size="sm"
-          >
-            <MessageSquare className="size-4" />
-            New chat
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 gap-2 rounded-xl h-10 border-muted-foreground/10 hover:border-primary/30"
-            size="sm"
-          >
-            <MapPin className="size-4" />
-            New trip
-          </Button>
-        </div>
+        <NewChatButton />
       </div>
 
       <Separator className="bg-muted-foreground/5 mx-6 w-auto" />
@@ -79,6 +61,7 @@ export function ChatHistorySidebar() {
             <Link
               key={chat.session_id}
               to="/chat/$chatId"
+              preload="intent"
               params={{ chatId: chat.session_id }}
               className={cn(
                 "w-full text-left px-4 py-3 rounded-xl transition-all group block",
