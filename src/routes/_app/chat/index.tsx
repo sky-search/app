@@ -3,7 +3,6 @@ import { generateRandomChatId } from "@/shared/lib/utils"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_app/chat/")({
-  component: RouteComponent,
   async beforeLoad() {
     const conversations = await getConversationList()
     if (conversations.isErr()) return
@@ -26,7 +25,3 @@ export const Route = createFileRoute("/_app/chat/")({
     }
   },
 })
-
-function RouteComponent() {
-  return <div>Hello "/_app/chat/"!</div>
-}
