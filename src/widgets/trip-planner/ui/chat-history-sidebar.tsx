@@ -9,25 +9,6 @@ import { Link } from "@tanstack/react-router"
 import { History, MapPin, MessageSquare, Search } from "lucide-react"
 import { useState } from "react"
 
-interface ChatHistoryItem {
-  id: string
-  title: string
-  timestamp: Date
-}
-
-const mockChats: ChatHistoryItem[] = [
-  {
-    id: "1",
-    title: "Weekend in Tashkent",
-    timestamp: new Date(),
-  },
-  {
-    id: "2",
-    title: "Trip to Samarkand",
-    timestamp: new Date(Date.now() - 86400000),
-  },
-]
-
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
   const { data } = useQuery({
@@ -38,7 +19,7 @@ export function ChatHistorySidebar() {
       return result.value
     },
   })
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
+  const selectedChatId = null
 
   const filteredChats = data?.conversations?.filter?.((chat) =>
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()),

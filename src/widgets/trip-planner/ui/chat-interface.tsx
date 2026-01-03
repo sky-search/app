@@ -24,11 +24,8 @@ import { getRouteApi } from "@tanstack/react-router"
 import {
   ArrowUp,
   Copy,
-  Globe,
   Mic,
-  MoreHorizontal,
   Pencil,
-  Plus,
   Square,
   ThumbsDown,
   ThumbsUp,
@@ -118,41 +115,13 @@ export function ChatInterface() {
             onSubmit={handleSubmit}
             className="border-input bg-popover relative z-10 w-full rounded-3xl border p-0 pt-1 shadow-xs"
           >
-            <div className="flex flex-col">
+            <div className="flex justify-between items-center gap-6 px-3 py-2">
               <PromptInputTextarea
                 placeholder="Ask anything"
-                className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base bg-transparent"
+                className="bg-transparent"
               />
 
-              <PromptInputActions className="mt-5 flex w-full items-center justify-between gap-2 px-3 pb-3">
-                <div className="flex items-center gap-2">
-                  <PromptInputAction tooltip="Add a new action">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-9 rounded-full"
-                    >
-                      <Plus size={18} />
-                    </Button>
-                  </PromptInputAction>
-
-                  <PromptInputAction tooltip="Search">
-                    <Button variant="outline" className="rounded-full">
-                      <Globe size={18} />
-                      Search
-                    </Button>
-                  </PromptInputAction>
-
-                  <PromptInputAction tooltip="More actions">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="size-9 rounded-full"
-                    >
-                      <MoreHorizontal size={18} />
-                    </Button>
-                  </PromptInputAction>
-                </div>
+              <PromptInputActions className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <PromptInputAction tooltip="Voice input">
                     <Button
@@ -182,7 +151,7 @@ export function ChatInterface() {
                       {!isLoading ? (
                         <ArrowUp size={18} />
                       ) : (
-                        <span className="size-3 rounded-xs bg-white animate-pulse" />
+                        <span className="size-3 rounded-xs bg-background animate-pulse" />
                       )}
                     </Button>
                   )}
