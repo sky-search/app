@@ -1,0 +1,25 @@
+import type { FlightOffer } from "@/features/flight-search"
+import type { TripData } from "@/widgets/trip-planner/ui/trip-itinerary"
+import { useTripPreviewStore } from "../../model/store"
+
+export function useTripPreview() {
+  const store = useTripPreviewStore()
+
+  function execute() {
+    store.openModal()
+  }
+
+  function previewItinerary(itinerary: TripData) {
+    store.setItinerary(itinerary)
+  }
+
+  function previewOffers(offers: FlightOffer[]) {
+    store.setOffers(offers)
+  }
+
+  return {
+    execute,
+    previewItinerary,
+    previewOffers,
+  }
+}

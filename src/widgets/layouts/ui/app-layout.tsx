@@ -1,3 +1,4 @@
+import { TripPreview } from "@/features/trip-preview"
 import { UserProfile } from "@/features/user/ui/user-profile"
 import { cn } from "@/shared/lib/utils"
 import {
@@ -104,6 +105,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex h-screen w-full overflow-hidden bg-background">
         <AppSidebar />
         <main className="flex-1 overflow-hidden relative">{children}</main>
+        <TripPreview />
       </div>
     </SidebarProvider>
   )

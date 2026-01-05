@@ -50,6 +50,21 @@ export async function* responseToStreamChunks(
             const suggestionsParser = SuggestionsParser.new()
             const json = suggestionsParser.parse(data)
             yield suggestionsParser.format(json)
+          } else if (currentEvent === "status") {
+            const statusData = JSON.parse(data)
+            yield {
+              type: "status",
+              timestamp: Date.now(),
+              status: statusData.status,
+              content: statusData.message || "",
+            } as any
+          } else if (currentEvent === "data_payload") {
+            const payloadData = JSON.parse(data)
+            yield {
+              type: payloadData.type,
+              timestamp: Date.now(),
+              payload: payloadData.data,
+            } as any
           }
         } else if (line.trim() === "") {
           currentEvent = ""

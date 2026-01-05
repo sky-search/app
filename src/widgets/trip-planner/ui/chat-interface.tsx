@@ -1,3 +1,4 @@
+import { useTripPreview } from "@/features/trip-preview"
 import { getConversationById } from "@/services/conversation"
 import { getCurrentUser } from "@/services/user"
 import { cn } from "@/shared/lib/utils"
@@ -30,6 +31,7 @@ const routeApi = getRouteApi("/_app/chat/$chatId/")
 
 export function ChatInterface() {
   const [prompt, setPrompt] = useState("")
+  const { execute, previewItinerary, previewOffers } = useTripPreview()
   const routeParams = useParams({
     from: "/_app/chat/$chatId/",
   })
@@ -38,6 +40,17 @@ export function ChatInterface() {
   const { messages, sendMessage, isLoading, stop, setMessages, ...chatUtils } =
     useChat({
       connection: fetchServerSentEvents(`/api/chat/${routeParams.chatId}`),
+      onChunk(chunk: any) {
+        if (chunk.type === "itinerary") {
+          console.log(chunk.payload)
+          previewItinerary(chunk.payload)
+          execute()
+        } else if (chunk.type === "flight_cards") {
+          console.log(chunk.payload)
+          previewOffers(chunk.payload)
+          execute()
+        }
+      },
     })
 
   const handleSubmit = async () => {
