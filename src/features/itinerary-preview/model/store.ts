@@ -10,7 +10,7 @@ export const useItineraryPreviewStore = create<{
   isModalOpen: false,
   setIsModalOpen: (value: boolean) => {
     if (value === false) {
-      set({ itinerary: null, isModalOpen: value })
+      return set({ itinerary: null, isModalOpen: value })
     }
     return set({ isModalOpen: value })
   },
