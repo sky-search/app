@@ -37,9 +37,7 @@ const MessageAvatar = ({
   return (
     <Avatar className={cn("h-8 w-8 shrink-0", className)}>
       <AvatarImage src={src} alt={alt} />
-      {fallback && (
-        <AvatarFallback delayMs={delayMs}>{fallback}</AvatarFallback>
-      )}
+      {fallback && <AvatarFallback delay={delayMs}>{fallback}</AvatarFallback>}
     </Avatar>
   )
 }

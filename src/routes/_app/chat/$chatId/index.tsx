@@ -1,68 +1,72 @@
+import { queryClient } from "@/app/providers/tanstack-query/provider"
+import { getEmptyConversation } from "@/entities/conversation"
 import { getConversationById } from "@/services/conversation"
-import { cn } from "@/shared/lib/utils"
-import { Button } from "@/shared/ui/button"
-import { ChatInterface, ItineraryPreview } from "@/widgets/trip-planner/ui"
-import { createFileRoute } from "@tanstack/react-router"
-import { PanelRight } from "lucide-react"
-import { useState } from "react"
+import { useGetConversationListQuery } from "@/shared/queries/conversation"
+import { ChatInterface } from "@/widgets/trip-planner/ui"
+import { createFileRoute, redirect } from "@tanstack/react-router"
+import { useEffect } from "react"
 
 export const Route = createFileRoute("/_app/chat/$chatId/")({
   component: RouteComponent,
-  async loader(ctx) {
-    const { chatId } = ctx.params
-    const result = await getConversationById({
-      id: chatId,
+  async loader({ params }) {
+    const { chatId } = params
+    const conversationListQueryKey = useGetConversationListQuery.getKey()
+    const existingConversations = await queryClient.ensureQueryData({
+      queryKey: conversationListQueryKey,
+      queryFn: async () => useGetConversationListQuery.fetcher({}),
     })
+    const doesConversationExist = existingConversations?.conversations?.some(
+      (conversation) => conversation.session_id === chatId,
+    )
+    if (
+      !doesConversationExist &&
+      existingConversations?.conversations.length > 0
+    ) {
+      throw redirect({
+        to: "/chat/$chatId",
+        params: {
+          chatId: existingConversations.conversations[0].session_id,
+        },
+      })
+    }
+    const getConversationQueryResult = queryClient.ensureQueryData({
+      queryKey: ["conversation", chatId],
+      queryFn: async () => {
+        const result = await getConversationById({ id: chatId })
+        if (result.isErr()) {
+          if (result.error.status === 404) return getEmptyConversation(chatId)
+          throw new Error(result.error.message)
+        }
+        return result.value
+      },
+    })
+
     return {
-      chat: result,
+      getConversationQueryResult,
     }
   },
 })
 
 function RouteComponent() {
-  const [showPreview, setShowPreview] = useState(true)
+  const params = Route.useParams()
 
   return (
     <>
-      <div className="absolute top-4 right-4 z-20 xl:hidden">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setShowPreview(!showPreview)}
-        >
-          <PanelRight className="size-4" />
-        </Button>
-      </div>
-
       <main className="flex-1 overflow-hidden relative">
-        <ChatInterface />
+        <ChatInterface key={params.chatId} />
       </main>
-
-      <aside
-        className={cn(
-          "transition-all duration-300 ease-in-out border-l border-border bg-card/30 backdrop-blur-sm",
-          showPreview ? "w-96 translate-x-0" : "w-0 translate-x-full opacity-0",
-          "hidden xl:block shrink-0 overflow-hidden",
-        )}
-      >
-        <ItineraryPreview />
-      </aside>
-      <div className="fixed bottom-24 right-4 z-50 hidden xl:flex flex-col gap-2">
-        <Button
-          variant="secondary"
-          size="icon"
-          className="rounded-full shadow-lg border border-border"
-          onClick={() => setShowPreview(!showPreview)}
-          title="Toggle Preview"
-        >
-          <PanelRight
-            className={cn(
-              "size-4 transition-transform",
-              !showPreview && "rotate-180",
-            )}
-          />
-        </Button>
-      </div>
+      <RouteWatcher />
     </>
   )
+}
+
+function RouteWatcher() {
+  const params = Route.useParams()
+
+  useEffect(() => {
+    queryClient.resetQueries({ queryKey: ["conversation", params.chatId] })
+    queryClient.invalidateQueries({ queryKey: ["conversation", params.chatId] })
+  }, [params.chatId])
+
+  return null
 }

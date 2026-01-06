@@ -1,5 +1,6 @@
 export { ChatHistorySidebar } from "./chat-history-sidebar"
 export { ChatInterface } from "./chat-interface"
 export { ItineraryPreview } from "./itinerary-preview"
+export { TripItinerary } from "./trip-itinerary"
 export { TripPlannerLayout } from "./trip-planner-layout"
 export { TripSearchHeader } from "./trip-search-header"
