@@ -178,12 +178,18 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
 
     return message.parts.map((part, index) => {
       if (part.type === "thinking") {
-        return <ThinkingMessage part={part} key={index} index={index} />
+        return (
+          <ThinkingMessage
+            part={part}
+            key={`${message.id}-thinking-${index}`}
+            index={index}
+          />
+        )
       }
 
       return (
         <Message
-          key={message.id}
+          key={`${message.id}-${index}`}
           className={cn(
             "mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 mb-8",
             isAssistant ? "items-start" : "items-end",

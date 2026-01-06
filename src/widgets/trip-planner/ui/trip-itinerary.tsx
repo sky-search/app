@@ -167,7 +167,7 @@ export function TripItinerary({ data }: { data: TripData }) {
                   const CategoryIcon = getCategoryIcon(activity.category)
                   return (
                     <div
-                      key={`${activity.name}-${activity.time}`}
+                      key={`${day.day_number}-${activity.name}-${activity.time}`}
                       className="relative group"
                     >
                       {/* Timeline Dot */}
