@@ -95,7 +95,8 @@ export function FlightOfferCard({
               {offer.airline.name}
             </h3>
             <p className="text-xs text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">
-              {offer.airline.code} • {offer.slices[0].segments[0].cabin_class}
+              {offer.airline.code} •{" "}
+              {offer.slices?.[0]?.segments?.[0]?.cabin_class}
             </p>
           </div>
         </div>
