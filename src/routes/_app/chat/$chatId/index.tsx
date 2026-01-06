@@ -1,19 +1,43 @@
 import { queryClient } from "@/app/providers/tanstack-query/provider"
+import { getEmptyConversation } from "@/entities/conversation"
 import { getConversationById } from "@/services/conversation"
+import { useGetConversationListQuery } from "@/shared/queries/conversation"
 import { ChatInterface } from "@/widgets/trip-planner/ui"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useEffect } from "react"
 
 export const Route = createFileRoute("/_app/chat/$chatId/")({
   component: RouteComponent,
-  loader({ params }) {
+  async loader({ params }) {
     const { chatId } = params
-
+    const conversationListQueryKey = useGetConversationListQuery.getKey()
+    const existingConversations = await queryClient.ensureQueryData({
+      queryKey: conversationListQueryKey,
+      queryFn: async () => useGetConversationListQuery.fetcher({}),
+    })
+    const doesConversationExist = existingConversations?.conversations?.some(
+      (conversation) => conversation.session_id === chatId,
+    )
+    if (!doesConversationExist) {
+      if (
+        existingConversations?.conversations === null ||
+        existingConversations?.conversations === undefined
+      ) {
+        return
+      }
+      throw redirect({
+        to: "/chat/$chatId",
+        params: {
+          chatId: existingConversations.conversations[0].session_id,
+        },
+      })
+    }
     const getConversationQueryResult = queryClient.ensureQueryData({
       queryKey: ["conversation", chatId],
       queryFn: async () => {
         const result = await getConversationById({ id: chatId })
         if (result.isErr()) {
+          if (result.error.status === 404) return getEmptyConversation(chatId)
           throw new Error(result.error.message)
         }
         return result.value

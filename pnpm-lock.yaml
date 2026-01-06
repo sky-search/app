@@ -101,6 +101,9 @@ importers:
       react-phone-number-input:
         specifier: ^3.4.14
         version: 3.4.14(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react-query-kit:
+        specifier: ^3.3.2
+        version: 3.3.2(@tanstack/react-query@5.90.12(react@19.2.3))
       remark-breaks:
         specifier: ^4.0.0
         version: 4.0.0
@@ -4220,6 +4223,14 @@ packages:
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
+
+  react-query-kit@3.3.2:
+    resolution: {integrity: sha512-2dKF2kKNshfyOcEs7JG3VXCoh8SHmg8VtDb7LMgAKDrV3fFdcOh3efuEOkmD8IZ6PD+DjX9As2pL3uXKsMv2VQ==}
+    peerDependencies:
+      '@tanstack/react-query': ^4 || ^5
+    peerDependenciesMeta:
+      '@tanstack/react-query':
+        optional: true
 
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
@@ -9606,6 +9617,10 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
+
+  react-query-kit@3.3.2(@tanstack/react-query@5.90.12(react@19.2.3)):
+    optionalDependencies:
+      '@tanstack/react-query': 5.90.12(react@19.2.3)
 
   react-refresh@0.18.0: {}
 

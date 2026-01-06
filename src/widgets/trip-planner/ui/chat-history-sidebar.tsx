@@ -1,9 +1,8 @@
-import { getConversationList } from "@/services/conversation"
 import { cn, formatStringDate } from "@/shared/lib/utils"
+import { useGetConversationListQuery } from "@/shared/queries/conversation"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { History, MessageSquare, Search } from "lucide-react"
 import { useState } from "react"
@@ -11,14 +10,7 @@ import { NewChatButton } from "./new-chat-button"
 
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
-  const { data } = useQuery({
-    queryKey: ["conversations"],
-    queryFn: async () => {
-      const result = await getConversationList()
-      if (result.isErr()) throw new Error(result.error.message)
-      return result.value
-    },
-  })
+  const { data } = useGetConversationListQuery()
   const selectedChatId = null
 
   const filteredChats = data?.conversations?.filter?.((chat) =>
@@ -57,39 +49,45 @@ export function ChatHistorySidebar() {
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             Recent Chats
           </div>
-          {filteredChats?.map((chat) => (
-            <Link
-              key={chat.session_id}
-              to="/chat/$chatId"
-              preload="intent"
-              params={{ chatId: chat.session_id }}
-              className={cn(
-                "w-full text-left px-4 py-3 rounded-xl transition-all group block",
-                selectedChatId === chat.session_id
-                  ? "bg-primary/10 text-primary shadow-sm"
-                  : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
-              )}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
+          <ScrollArea className="max-h-[60vh] pb-6">
+            <ul>
+              {filteredChats?.map((chat) => (
+                <li key={chat.session_id} className="w-full">
+                  <Link
+                    key={chat.session_id}
+                    to="/chat/$chatId"
+                    preload="intent"
+                    params={{ chatId: chat.session_id }}
                     className={cn(
-                      "size-2 rounded-full",
+                      "w-full text-left px-4 py-3 rounded-xl transition-all group block",
                       selectedChatId === chat.session_id
-                        ? "bg-primary"
-                        : "bg-muted-foreground/30 group-hover:bg-primary/50",
+                        ? "bg-primary/10 text-primary shadow-sm"
+                        : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
                     )}
-                  />
-                  <span className="text-sm font-medium truncate">
-                    {chat.title}
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
-                  {formatStringDate(chat.last_message_at ?? "")}
-                </span>
-              </div>
-            </Link>
-          ))}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={cn(
+                            "size-2 rounded-full",
+                            selectedChatId === chat.session_id
+                              ? "bg-primary"
+                              : "bg-muted-foreground/30 group-hover:bg-primary/50",
+                          )}
+                        />
+                        <span className="text-sm font-medium truncate">
+                          {chat.title}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
+                        {formatStringDate(chat.last_message_at ?? "")}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
 
           {filteredChats?.length === 0 && (
             <div className="p-8 text-center space-y-2">
