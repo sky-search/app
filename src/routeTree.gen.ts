@@ -14,13 +14,14 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppChatRouteRouteImport } from './routes/_app/chat/route'
 import { Route as AppTripsIndexRouteImport } from './routes/_app/trips/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSavedIndexRouteImport } from './routes/_app/saved/index'
 import { Route as AppProfileIndexRouteImport } from './routes/_app/profile/index'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat/index'
+import { Route as ApiChatChatIdRouteImport } from './routes/api/chat.$chatId'
+import { Route as AppChatNewRouteImport } from './routes/_app/chat/new'
 import { Route as AppChatChatIdIndexRouteImport } from './routes/_app/chat/$chatId/index'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
@@ -46,11 +47,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AppChatRouteRoute = AppChatRouteRouteImport.update({
   id: '/chat',
@@ -82,6 +78,16 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppChatRouteRoute,
 } as any)
+const ApiChatChatIdRoute = ApiChatChatIdRouteImport.update({
+  id: '/api/chat/$chatId',
+  path: '/api/chat/$chatId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppChatNewRoute = AppChatNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppChatRouteRoute,
+} as any)
 const AppChatChatIdIndexRoute = AppChatChatIdIndexRouteImport.update({
   id: '/$chatId/',
   path: '/$chatId/',
@@ -92,9 +98,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
   '/chat': typeof AppChatRouteRouteWithChildren
-  '/api/chat': typeof ApiChatRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/chat/new': typeof AppChatNewRoute
+  '/api/chat/$chatId': typeof ApiChatChatIdRoute
   '/chat/': typeof AppChatIndexRoute
   '/profile': typeof AppProfileIndexRoute
   '/saved': typeof AppSavedIndexRoute
@@ -105,9 +112,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
-  '/api/chat': typeof ApiChatRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/chat/new': typeof AppChatNewRoute
+  '/api/chat/$chatId': typeof ApiChatChatIdRoute
   '/chat': typeof AppChatIndexRoute
   '/profile': typeof AppProfileIndexRoute
   '/saved': typeof AppSavedIndexRoute
@@ -121,9 +129,10 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
   '/_app/chat': typeof AppChatRouteRouteWithChildren
-  '/api/chat': typeof ApiChatRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/_app/chat/new': typeof AppChatNewRoute
+  '/api/chat/$chatId': typeof ApiChatChatIdRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/profile/': typeof AppProfileIndexRoute
   '/_app/saved/': typeof AppSavedIndexRoute
@@ -137,9 +146,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/chat'
-    | '/api/chat'
     | '/auth/login'
     | '/auth/signup'
+    | '/chat/new'
+    | '/api/chat/$chatId'
     | '/chat/'
     | '/profile'
     | '/saved'
@@ -150,9 +160,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/api/chat'
     | '/auth/login'
     | '/auth/signup'
+    | '/chat/new'
+    | '/api/chat/$chatId'
     | '/chat'
     | '/profile'
     | '/saved'
@@ -165,9 +176,10 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/_app/chat'
-    | '/api/chat'
     | '/auth/login'
     | '/auth/signup'
+    | '/_app/chat/new'
+    | '/api/chat/$chatId'
     | '/_app/chat/'
     | '/_app/profile/'
     | '/_app/saved/'
@@ -180,7 +192,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
-  ApiChatRoute: typeof ApiChatRoute
+  ApiChatChatIdRoute: typeof ApiChatChatIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -219,13 +231,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRouteRoute
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_app/chat': {
       id: '/_app/chat'
@@ -269,6 +274,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppChatRouteRoute
     }
+    '/api/chat/$chatId': {
+      id: '/api/chat/$chatId'
+      path: '/api/chat/$chatId'
+      fullPath: '/api/chat/$chatId'
+      preLoaderRoute: typeof ApiChatChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/chat/new': {
+      id: '/_app/chat/new'
+      path: '/new'
+      fullPath: '/chat/new'
+      preLoaderRoute: typeof AppChatNewRouteImport
+      parentRoute: typeof AppChatRouteRoute
+    }
     '/_app/chat/$chatId/': {
       id: '/_app/chat/$chatId/'
       path: '/$chatId'
@@ -280,11 +299,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppChatRouteRouteChildren {
+  AppChatNewRoute: typeof AppChatNewRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppChatChatIdIndexRoute: typeof AppChatChatIdIndexRoute
 }
 
 const AppChatRouteRouteChildren: AppChatRouteRouteChildren = {
+  AppChatNewRoute: AppChatNewRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppChatChatIdIndexRoute: AppChatChatIdIndexRoute,
 }
@@ -331,7 +352,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
-  ApiChatRoute: ApiChatRoute,
+  ApiChatChatIdRoute: ApiChatChatIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

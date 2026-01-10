@@ -14,7 +14,9 @@ export type MarkdownProps = {
 }
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
-  const tokens = marked.lexer(markdown)
+  const tokens = marked.lexer(markdown ?? "", {
+    silent: true,
+  })
   return tokens.map((token) => token.raw)
 }
 
@@ -95,7 +97,10 @@ function MarkdownComponent({
     <div className={className}>
       {blocks.map((block, index) => (
         <MemoizedMarkdownBlock
-          key={`${blockId}-block-${index}`}
+          key={`${blockId}-block-${
+            // biome-ignore lint/suspicious/noArrayIndexKey: here we're not using the index itself, we're combining it with the blockId to create a unique key
+            index
+          }`}
           content={block}
           components={components}
         />

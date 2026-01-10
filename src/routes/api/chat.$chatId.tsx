@@ -1,4 +1,12 @@
 import { startChatMessageStream } from "@/services/chat"
+import { getCurrentUser } from "@/services/user"
+import {
+  ErrorChunkParser,
+  SuggestionsParser,
+  ThinkingParser,
+  TokenParser,
+} from "@/shared/lib/event-parser"
+import { streamDecoder } from "@/shared/lib/stream-decoder"
 import { type StreamChunk, toServerSentEventsStream } from "@tanstack/ai"
 import { createFileRoute } from "@tanstack/react-router"
 
@@ -7,33 +15,19 @@ import { createFileRoute } from "@tanstack/react-router"
  * into AsyncIterable<StreamChunk> for TanStack AI
  */
 export async function* responseToStreamChunks(
-  streamInput: any,
+  streamInput: Response,
 ): AsyncIterable<StreamChunk> {
-  const decoder = new TextDecoder()
   let buffer = ""
-
-  // Normalize input to an async iterable
-  let iterable: AsyncIterable<Uint8Array | string>
-  if (streamInput instanceof Response) {
-    if (!streamInput.body) throw new Error("Response body is missing")
-    iterable = streamInput.body as any
-  } else if (
-    streamInput &&
-    typeof streamInput[Symbol.asyncIterator] === "function"
-  ) {
-    iterable = streamInput
-  } else {
-    throw new Error("Invalid stream input")
-  }
-
   let currentEvent = ""
+  const iterable: AsyncIterable<Uint8Array | string> = streamInput.body as any
+  const errorChunkParser = ErrorChunkParser.new()
 
   try {
     for await (const value of iterable) {
       const chunkStr =
         typeof value === "string"
           ? value
-          : decoder.decode(value, { stream: true })
+          : streamDecoder.decode(value, { stream: true })
       buffer += chunkStr
 
       const lines = buffer.split("\n")
@@ -44,57 +38,47 @@ export async function* responseToStreamChunks(
           currentEvent = line.slice(7).trim()
         } else if (line.startsWith("data: ")) {
           const data = line.slice(6).trim()
-
           if (data === "[DONE]") return
 
-          const id = crypto.randomUUID()
-          const timestamp = Date.now()
-
-          try {
-            if (currentEvent === "token") {
-              const json = JSON.parse(data)
-              yield {
-                type: "content",
-                delta: json.content || "",
-                id,
-                timestamp,
-              } as any
-            } else if (currentEvent === "thinking") {
-              const json = JSON.parse(data)
-              yield {
-                type: "metadata" as any,
-                value: { thinking: json.steps },
-                id,
-                timestamp,
-              } as any
-            } else if (currentEvent === "suggestions") {
-              const json = JSON.parse(data)
-              yield {
-                type: "metadata" as any,
-                value: { suggestions: json },
-                id,
-                timestamp,
-              } as any
-            } else if (!currentEvent) {
-              try {
-                const json = JSON.parse(data)
-                yield {
-                  type: "content",
-                  delta: json.delta || json.content || "",
-                  id,
-                  timestamp,
-                } as any
-              } catch {
-                yield {
-                  type: "content",
-                  delta: data,
-                  id,
-                  timestamp,
-                } as any
-              }
+          if (currentEvent === "token") {
+            const tokenParser = TokenParser.new()
+            const parseResult = tokenParser.parse(data)
+            if (parseResult.isErr()) {
+              yield errorChunkParser.format(parseResult.error.message)
+              continue
             }
-          } catch (e) {
-            console.error("Error parsing SSE data chunk:", e, data)
+            yield tokenParser.format(parseResult.value)
+          } else if (currentEvent === "thinking") {
+            const thinkingParser = ThinkingParser.new()
+            const parseResult = thinkingParser.parse(data)
+            if (parseResult.isErr()) {
+              yield errorChunkParser.format(parseResult.error.message)
+              continue
+            }
+            yield thinkingParser.format(parseResult.value)
+          } else if (currentEvent === "suggestions") {
+            const suggestionsParser = SuggestionsParser.new()
+            const parseResult = suggestionsParser.parse(data)
+            if (parseResult.isErr()) {
+              yield errorChunkParser.format(parseResult.error.message)
+              continue
+            }
+            yield suggestionsParser.format(parseResult.value)
+          } else if (currentEvent === "status") {
+            const statusData = JSON.parse(data)
+            yield {
+              type: "status",
+              timestamp: Date.now(),
+              status: statusData.status,
+              content: statusData.message || "",
+            } as any
+          } else if (currentEvent === "data_payload") {
+            const payloadData = JSON.parse(data)
+            yield {
+              type: payloadData.type,
+              timestamp: Date.now(),
+              payload: payloadData.data,
+            } as any
           }
         } else if (line.trim() === "") {
           currentEvent = ""
@@ -107,12 +91,19 @@ export async function* responseToStreamChunks(
   }
 }
 
-export const Route = createFileRoute("/api/chat")({
+export const Route = createFileRoute("/api/chat/$chatId")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request, params }) => {
         try {
-          const { messages, conversationId } = await request.json()
+          const { messages } = await request.json()
+          const currentUser = await getCurrentUser()
+          if (currentUser.isErr()) {
+            return new Response(JSON.stringify(currentUser.error), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            })
+          }
 
           // Get the last user message content
           const lastMessage = messages[messages.length - 1]
@@ -131,8 +122,9 @@ export const Route = createFileRoute("/api/chat")({
           const response = await startChatMessageStream({
             body: {
               message: userContent,
-              session_id: conversationId,
+              session_id: params.chatId,
               stream: true,
+              user_id: currentUser.value.id,
             },
           })
 
@@ -152,15 +144,8 @@ export const Route = createFileRoute("/api/chat")({
           // Convert to SSE stream for the client
           const sseStream = toServerSentEventsStream(chunks)
 
-          return new Response(sseStream, {
-            headers: {
-              "Content-Type": "text/event-stream; charset=utf-8",
-              "Cache-Control": "no-cache, no-transform",
-              Connection: "keep-alive",
-            },
-          })
+          return new Response(sseStream)
         } catch (error) {
-          console.error("API Chat Error:", error)
           return new Response(
             JSON.stringify({
               error:
