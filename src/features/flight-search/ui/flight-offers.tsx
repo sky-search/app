@@ -56,6 +56,10 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
           cause: result.error.detail,
         })
 
+      if (result.value.offers.length === 0) {
+        return offers
+      }
+
       return result.value.offers
     },
     enabled: isExpired,
