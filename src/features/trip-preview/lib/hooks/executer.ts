@@ -14,8 +14,9 @@ export function useTripPreview() {
     store.setItinerary(itinerary)
   }
 
-  function previewOffers(offers: FlightOffer[]) {
+  function previewOffers(offers: FlightOffer[], isOffersExpired: boolean) {
     store.setOffers(offers)
+    store.setIsOffersExpired(isOffersExpired)
   }
 
   function setTripId(tripId: number) {

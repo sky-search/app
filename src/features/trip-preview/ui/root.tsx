@@ -1,8 +1,11 @@
-import { FlightOffersList } from "@/features/flight-search/ui/flight-offers-list"
+import { FlightOffers } from "@/features/flight-search/ui/flight-offers"
+import { buttonVariants } from "@/shared/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { TripItinerary } from "@/widgets/trip-planner/ui"
 import { Link, useParams } from "@tanstack/react-router"
+import { ArrowRight } from "lucide-react"
 import { useEffect } from "react"
+import { match } from "ts-pattern"
 import { useTripPreviewStore } from "../model/store"
 import { CreateTripButton } from "./create-trip-button"
 
@@ -18,37 +21,53 @@ export function TripPreview() {
 function Dynamic() {
   const store = useTripPreviewStore()
 
-  if (store.mode === "hidden") return null
-
   return (
     <aside className="p-3 bg-background/70 border-l max-w-md min-w-md">
-      <Tabs defaultValue="itineraryPlan" className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="itineraryPlan">Itinerary plan</TabsTrigger>
-          <TabsTrigger value="flightOffers">Flight offers</TabsTrigger>
-        </TabsList>
-        <TabsContent
-          className="overflow-auto max-h-[75vh] p-1"
-          value="itineraryPlan"
-        >
-          {store.itinerary && <TripItinerary data={store.itinerary} />}
-        </TabsContent>
-        <TabsContent
-          className="overflow-auto max-h-[75vh] p-1"
-          value="flightOffers"
-        >
-          {store.offers && <FlightOffersList offers={store.offers} />}
-        </TabsContent>
-        <div className="flex justify-end">
-          {store.tripId ? (
-            <Link to="/trips" className="w-full">
-              Open trip
-            </Link>
-          ) : (
-            <CreateTripProvider />
-          )}
-        </div>
-      </Tabs>
+      {match(store.mode)
+        .with("hidden", () => null)
+        .otherwise(() => (
+          <Tabs defaultValue="itineraryPlan" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="itineraryPlan">Itinerary plan</TabsTrigger>
+              <TabsTrigger value="flightOffers">Flight offers</TabsTrigger>
+            </TabsList>
+            <TabsContent
+              className="overflow-auto max-h-[75vh] p-1"
+              value="itineraryPlan"
+            >
+              {store.itinerary && <TripItinerary data={store.itinerary} />}
+            </TabsContent>
+            <TabsContent
+              className="overflow-auto max-h-[75vh] p-1"
+              value="flightOffers"
+            >
+              {store.offers && (
+                <FlightOffers
+                  isExpired={store.isOffersExpired}
+                  offers={store.offers}
+                />
+              )}
+            </TabsContent>
+            <div className="flex justify-end">
+              {store.tripId !== null ? (
+                <Link
+                  to="/trips/$tripId"
+                  params={{ tripId: String(store.tripId) }}
+                  className={buttonVariants({
+                    variant: "secondary",
+                    class: "w-full",
+                    size: "lg",
+                  })}
+                >
+                  Open trip
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
+              ) : (
+                <CreateTripProvider />
+              )}
+            </div>
+          </Tabs>
+        ))}
     </aside>
   )
 }
@@ -79,6 +98,7 @@ function RouteWatcher() {
     from: "/_app/chat/$chatId/",
   })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: we only want to reset the store when the chatId changes
   useEffect(() => {
     store.setMode("hidden")
     store.setOffers([])
