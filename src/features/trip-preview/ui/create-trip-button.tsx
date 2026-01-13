@@ -6,6 +6,7 @@ import { getCurrentUserFn } from "@/shared/lib/auth"
 import { Button } from "@/shared/ui/button"
 import type { ItineraryData } from "@/widgets/trip-planner/ui/trip-itinerary"
 import { useIsMutating } from "@tanstack/react-query"
+import { useNavigate } from "@tanstack/react-router"
 import { useServerFn } from "@tanstack/react-start"
 import { Loader2 } from "lucide-react"
 
@@ -17,6 +18,7 @@ type Props = {
 }
 
 export function CreateTripButton({ itinerary, searchInfo, sessionId }: Props) {
+  const navigate = useNavigate()
   const mutation = createTripMutation()
   const currentUserFn = useServerFn(getCurrentUserFn)
   const mutationNumber = useIsMutating({
@@ -42,11 +44,13 @@ export function CreateTripButton({ itinerary, searchInfo, sessionId }: Props) {
       },
       {
         onSuccess(data) {
-          console.log(data)
+          navigate({
+            to: "/trips/$tripId",
+            params: { tripId: String(data.id) },
+          })
           notifySuccess("Trip created successfully")
         },
         onError(error) {
-          console.log(error.detail)
           notifyError(error.message)
         },
       },

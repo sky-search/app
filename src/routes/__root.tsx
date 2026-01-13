@@ -1,6 +1,7 @@
 import { RootProvider } from "@/app/providers/root/provider"
 import appCss from "@/app/styles/styles.css?url"
 import { Toaster } from "@/shared/ui/sonner"
+import { GlobalErrorLayout } from "@/widgets/layouts/ui/global-error-layout"
 import { aiDevtoolsPlugin } from "@tanstack/react-ai-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import {
@@ -14,7 +15,9 @@ import type * as React from "react"
 export const Route = createRootRoute({
   shellComponent: RootShell,
   component: RootComponent,
-  errorComponent: () => <div>Error</div>,
+  errorComponent: (error) => (
+    <GlobalErrorLayout error={error.error} reset={error.reset} />
+  ),
   notFoundComponent: () => <div>Not found</div>,
   ssr: false, // or `defaultSsr: false` on the router,
   head: () => ({

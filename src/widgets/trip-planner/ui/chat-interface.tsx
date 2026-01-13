@@ -46,7 +46,7 @@ export function ChatInterface() {
           previewItinerary(chunk.payload)
         } else if (chunk.type === "flight_cards") {
           execute()
-          previewOffers(chunk.payload)
+          previewOffers(chunk.payload, false)
         }
       },
     })
@@ -142,7 +142,7 @@ export function ChatInterface() {
 }
 
 function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
-  const { previewItinerary, previewOffers, setSearchInfo, execute } =
+  const { previewItinerary, previewOffers, setSearchInfo, setTripId, execute } =
     useTripPreview()
   const routeParams = routeApi.useParams()
   const queryResult = useQuery({
@@ -155,7 +155,10 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
       }
 
       if (result.value.flight_cards) {
-        previewOffers(result.value.flight_cards)
+        previewOffers(
+          result.value.flight_cards,
+          result.value.flight_cards_expired,
+        )
         execute()
       }
 
@@ -167,6 +170,11 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
       if (result.value.search_info) {
         setSearchInfo(result.value.search_info)
         execute()
+      }
+
+      if (result.value.trip_id) {
+        console.log(result.value)
+        setTripId(result.value.trip_id)
       }
 
       setMessages(

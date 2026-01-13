@@ -22,6 +22,7 @@ import {
   Clock,
   Compass,
   MapPin,
+  Plus,
   Tag,
   Wallet,
 } from "lucide-react"
