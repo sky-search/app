@@ -173,6 +173,7 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
       }
 
       if (result.value.trip_id) {
+        console.log(result.value)
         setTripId(result.value.trip_id)
       }
 

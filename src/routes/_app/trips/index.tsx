@@ -76,7 +76,7 @@ function TripListRoute() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 max-h-[75vh] overflow-y-auto">
             {data?.trips.map((trip) => (
               <Link
                 header-button-group
