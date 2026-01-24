@@ -55,6 +55,7 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
       });
 
       if (result.isErr()) {
+        console.error("Failed to refresh flight offers:", result.error);
         return offers;
       }
 
