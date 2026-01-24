@@ -5,13 +5,16 @@ import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardHeader } from "@/shared/ui/card"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select"
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog"
 import { Skeleton } from "@/shared/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { createFileRoute } from "@tanstack/react-router"
 import { format } from "date-fns"
 import {
@@ -27,6 +30,7 @@ import {
   Wallet,
 } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 export const Route = createFileRoute("/_app/trips/$tripId/")({
   component: TripDetailsRoute,
@@ -182,6 +186,7 @@ function DashboardView({ trip }: { trip: Trip }) {
           </Card>
         ))}
       </div>
+      <AddTripToGoogleCalendar trip={trip} />
       <div className="space-y-6">
         <h3 className="text-2xl font-bold">Itinerary</h3>
         <div className="grid gap-6">
@@ -341,6 +346,7 @@ function ScheduleView({ trip }: { trip: Trip }) {
   return (
     <div className="p-0 animate-in fade-in duration-500">
       <div className="overflow-x-auto">
+        <AddTripToGoogleCalendar trip={trip} />
         <table className="w-full border-collapse">
           <thead className="sticky top-0 bg-background z-10 border-b">
             <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider font-semibold">
@@ -400,6 +406,196 @@ function ScheduleView({ trip }: { trip: Trip }) {
         </table>
       </div>
     </div>
+  )
+}
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select"
+import { downloadICS, generateTripICS } from "@/shared/utils/calendar"
+
+export function AddTripToGoogleCalendar({ trip }: { trip: Trip }) {
+  const handleExport = () => {
+    try {
+      const icsContent = generateTripICS(trip)
+      downloadICS(`${trip.title.replace(/\s+/g, "_")}.ics`, icsContent)
+      toast.success("Itinerary exported!", {
+        description:
+          "Open the downloaded .ics file to add it to your calendar.",
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while generating the calendar file."
+      toast.error("Export failed", {
+        description: message,
+      })
+    }
+  }
+
+  return (
+    <div className="p-6 flex flex-col items-center justify-center bg-linear-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20 mb-8 mx-8">
+      <div className="text-center space-y-2 mb-4">
+        <h4 className="font-bold text-lg">Sync your itinerary</h4>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Export all activities to your favorite calendar (Google, Apple, or
+          Outlook) with one click.
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center gap-4">
+        <Button
+          onClick={handleExport}
+          className="gap-2 px-8 h-12 rounded-full font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+        >
+          <Calendar className="size-5" />
+          Add to Google Calendar
+        </Button>
+
+        <CalendarExportInstructions />
+      </div>
+
+      <p className="text-[10px] text-muted-foreground mt-4 uppercase tracking-widest font-medium opacity-60">
+        Multiple events will be added via .ics import
+      </p>
+    </div>
+  )
+}
+
+function CalendarExportInstructions() {
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <Button variant="link" size="sm" className="text-muted-foreground" />
+        }
+      >
+        How to import?
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-0">
+          <DialogTitle className="text-xl">Import Instructions</DialogTitle>
+          <DialogDescription>
+            Follow these steps to add your trip to your preferred calendar.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Tabs defaultValue="google" className="w-full">
+          <div className="px-6 border-b">
+            <TabsList
+              className="bg-transparent h-auto p-0 gap-6"
+              variant="line"
+            >
+              <TabsTrigger
+                value="google"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:bg-transparent px-0 py-3 font-semibold"
+              >
+                Google
+              </TabsTrigger>
+              <TabsTrigger
+                value="notion"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:bg-transparent px-0 py-3 font-semibold"
+              >
+                Notion
+              </TabsTrigger>
+              <TabsTrigger
+                value="apple"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:bg-transparent px-0 py-3 font-semibold"
+              >
+                Apple
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="p-6">
+            <TabsContent value="google" className="mt-0 space-y-4">
+              <ol className="space-y-3 list-decimal list-inside text-sm text-muted-foreground">
+                <li>
+                  Open{" "}
+                  <a
+                    href="https://calendar.google.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Google Calendar
+                  </a>{" "}
+                  on your computer.
+                </li>
+                <li>
+                  In the top right, click <strong>Settings</strong> &gt;{" "}
+                  <strong>Settings</strong>.
+                </li>
+                <li>
+                  In the left menu, click <strong>Import & export</strong>.
+                </li>
+                <li>
+                  Click <strong>Select file from your computer</strong> and
+                  choose the downloaded <code>.ics</code> file.
+                </li>
+                <li>
+                  Choose which calendar to add the events to and click{" "}
+                  <strong>Import</strong>.
+                </li>
+              </ol>
+            </TabsContent>
+
+            <TabsContent value="notion" className="mt-0 space-y-4">
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-3 rounded-lg text-xs flex gap-2">
+                <p>
+                  <strong>Note:</strong> Notion Calendar syncs with Google or
+                  Apple accounts. Import the file there first, and it will
+                  automatically appear in Notion.
+                </p>
+              </div>
+              <ol className="space-y-3 list-decimal list-inside text-sm text-muted-foreground">
+                <li>
+                  Import your <code>.ics</code> file into your synced Google or
+                  Apple Calendar (see other tabs).
+                </li>
+                <li>Open Notion Calendar on your desktop or web.</li>
+                <li>
+                  Ensure your account is connected in <strong>Settings</strong>.
+                </li>
+                <li>Your trip events will sync instantly across all views.</li>
+              </ol>
+            </TabsContent>
+
+            <TabsContent value="apple" className="mt-0 space-y-4">
+              <ol className="space-y-3 list-decimal list-inside text-sm text-muted-foreground">
+                <li>
+                  Open the <strong>Calendar</strong> app on your Mac.
+                </li>
+                <li>
+                  Go to <strong>File</strong> &gt; <strong>Import</strong>.
+                </li>
+                <li>
+                  Locate and select the downloaded <code>.ics</code> file.
+                </li>
+                <li>
+                  Click <strong>Import</strong> and select the calendar you want
+                  to add the events to.
+                </li>
+                <li>
+                  <strong>iPhone/iPad:</strong> Simply tap the downloaded file
+                  in the Files app, and iOS will offer to "Add All" to your
+                  calendar.
+                </li>
+              </ol>
+            </TabsContent>
+          </div>
+        </Tabs>
+
+        <div className="p-6 bg-muted/50 border-t flex justify-end">
+          <DialogClose render={<Button />}>Got it</DialogClose>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

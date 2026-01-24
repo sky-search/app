@@ -22,6 +22,7 @@ import { Route as AppProfileIndexRouteImport } from './routes/_app/profile/index
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat/index'
 import { Route as ApiChatChatIdRouteImport } from './routes/api/chat.$chatId'
 import { Route as AppChatNewRouteImport } from './routes/_app/chat/new'
+import { Route as AppChatChatIdRouteRouteImport } from './routes/_app/chat/$chatId/route'
 import { Route as AppTripsTripIdIndexRouteImport } from './routes/_app/trips/$tripId/index'
 import { Route as AppChatChatIdIndexRouteImport } from './routes/_app/chat/$chatId/index'
 
@@ -89,15 +90,20 @@ const AppChatNewRoute = AppChatNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AppChatRouteRoute,
 } as any)
+const AppChatChatIdRouteRoute = AppChatChatIdRouteRouteImport.update({
+  id: '/$chatId',
+  path: '/$chatId',
+  getParentRoute: () => AppChatRouteRoute,
+} as any)
 const AppTripsTripIdIndexRoute = AppTripsTripIdIndexRouteImport.update({
   id: '/trips/$tripId/',
   path: '/trips/$tripId/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppChatChatIdIndexRoute = AppChatChatIdIndexRouteImport.update({
-  id: '/$chatId/',
-  path: '/$chatId/',
-  getParentRoute: () => AppChatRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppChatChatIdRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof AppChatRouteRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/chat/$chatId': typeof AppChatChatIdRouteRouteWithChildren
   '/chat/new': typeof AppChatNewRoute
   '/api/chat/$chatId': typeof ApiChatChatIdRoute
   '/chat/': typeof AppChatIndexRoute
@@ -113,7 +120,7 @@ export interface FileRoutesByFullPath {
   '/saved': typeof AppSavedIndexRoute
   '/settings': typeof AppSettingsIndexRoute
   '/trips': typeof AppTripsIndexRoute
-  '/chat/$chatId': typeof AppChatChatIdIndexRoute
+  '/chat/$chatId/': typeof AppChatChatIdIndexRoute
   '/trips/$tripId': typeof AppTripsTripIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -139,6 +146,7 @@ export interface FileRoutesById {
   '/_app/chat': typeof AppChatRouteRouteWithChildren
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/_app/chat/$chatId': typeof AppChatChatIdRouteRouteWithChildren
   '/_app/chat/new': typeof AppChatNewRoute
   '/api/chat/$chatId': typeof ApiChatChatIdRoute
   '/_app/chat/': typeof AppChatIndexRoute
@@ -157,6 +165,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/auth/login'
     | '/auth/signup'
+    | '/chat/$chatId'
     | '/chat/new'
     | '/api/chat/$chatId'
     | '/chat/'
@@ -164,7 +173,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/settings'
     | '/trips'
-    | '/chat/$chatId'
+    | '/chat/$chatId/'
     | '/trips/$tripId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/_app/chat'
     | '/auth/login'
     | '/auth/signup'
+    | '/_app/chat/$chatId'
     | '/_app/chat/new'
     | '/api/chat/$chatId'
     | '/_app/chat/'
@@ -300,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatNewRouteImport
       parentRoute: typeof AppChatRouteRoute
     }
+    '/_app/chat/$chatId': {
+      id: '/_app/chat/$chatId'
+      path: '/$chatId'
+      fullPath: '/chat/$chatId'
+      preLoaderRoute: typeof AppChatChatIdRouteRouteImport
+      parentRoute: typeof AppChatRouteRoute
+    }
     '/_app/trips/$tripId/': {
       id: '/_app/trips/$tripId/'
       path: '/trips/$tripId'
@@ -309,24 +326,35 @@ declare module '@tanstack/react-router' {
     }
     '/_app/chat/$chatId/': {
       id: '/_app/chat/$chatId/'
-      path: '/$chatId'
-      fullPath: '/chat/$chatId'
+      path: '/'
+      fullPath: '/chat/$chatId/'
       preLoaderRoute: typeof AppChatChatIdIndexRouteImport
-      parentRoute: typeof AppChatRouteRoute
+      parentRoute: typeof AppChatChatIdRouteRoute
     }
   }
 }
 
-interface AppChatRouteRouteChildren {
-  AppChatNewRoute: typeof AppChatNewRoute
-  AppChatIndexRoute: typeof AppChatIndexRoute
+interface AppChatChatIdRouteRouteChildren {
   AppChatChatIdIndexRoute: typeof AppChatChatIdIndexRoute
 }
 
+const AppChatChatIdRouteRouteChildren: AppChatChatIdRouteRouteChildren = {
+  AppChatChatIdIndexRoute: AppChatChatIdIndexRoute,
+}
+
+const AppChatChatIdRouteRouteWithChildren =
+  AppChatChatIdRouteRoute._addFileChildren(AppChatChatIdRouteRouteChildren)
+
+interface AppChatRouteRouteChildren {
+  AppChatChatIdRouteRoute: typeof AppChatChatIdRouteRouteWithChildren
+  AppChatNewRoute: typeof AppChatNewRoute
+  AppChatIndexRoute: typeof AppChatIndexRoute
+}
+
 const AppChatRouteRouteChildren: AppChatRouteRouteChildren = {
+  AppChatChatIdRouteRoute: AppChatChatIdRouteRouteWithChildren,
   AppChatNewRoute: AppChatNewRoute,
   AppChatIndexRoute: AppChatIndexRoute,
-  AppChatChatIdIndexRoute: AppChatChatIdIndexRoute,
 }
 
 const AppChatRouteRouteWithChildren = AppChatRouteRoute._addFileChildren(
