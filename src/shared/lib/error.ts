@@ -24,8 +24,7 @@ export function isNetworkError(error: unknown): boolean {
       message.includes("connection") ||
       message.includes("timeout") ||
       message.includes("offline") ||
-      error.name === "NetworkError" ||
-      error.name === "TypeError"
+      error.name === "NetworkError"
     )
   }
   return false
