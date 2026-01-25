@@ -25,7 +25,15 @@ import {
 } from "@tanstack/ai-react"
 import { useQuery } from "@tanstack/react-query"
 import { getRouteApi, useParams } from "@tanstack/react-router"
-import { AlertCircle, ArrowUp, Globe, Loader2, Mic, RefreshCw, Square } from "lucide-react"
+import {
+  AlertCircle,
+  ArrowUp,
+  Globe,
+  Loader2,
+  Mic,
+  RefreshCw,
+  Square,
+} from "lucide-react"
 import { useRef, useState } from "react"
 import { SuggestionList } from "./suggestion-list"
 import { ThinkingSteps } from "./thinking-steps"
@@ -187,7 +195,7 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
       const result = await getConversationById({ id: routeParams.chatId })
       if (result.isErr()) {
         setMessages([])
-        throw new Error(result.error.message)
+        return []
       }
 
       if (result.value.flight_cards) {
@@ -242,7 +250,9 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
             <AlertCircle className="size-8 text-destructive" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Failed to load conversation</h2>
+            <h2 className="text-xl font-semibold">
+              Failed to load conversation
+            </h2>
             <p className="text-sm text-muted-foreground">
               {queryResult.error?.message || "Something went wrong"}
             </p>
