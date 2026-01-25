@@ -7,6 +7,7 @@ import {
   ChatContainerContent,
   ChatContainerRoot,
 } from "@/shared/ui/chat-container"
+import { Loader } from "@/shared/ui/loader"
 import { Message, MessageContent } from "@/shared/ui/message"
 import {
   PromptInput,
@@ -24,7 +25,7 @@ import {
 } from "@tanstack/ai-react"
 import { useQuery } from "@tanstack/react-query"
 import { getRouteApi, useParams } from "@tanstack/react-router"
-import { ArrowUp, Globe, Loader2, Mic, Square } from "lucide-react"
+import { ArrowUp, Globe, Mic, Square } from "lucide-react"
 import { useRef, useState } from "react"
 import { SuggestionList } from "./suggestion-list"
 import { ThinkingSteps } from "./thinking-steps"
@@ -223,14 +224,6 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     retry: false,
   })
 
-  if (queryResult.isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="animate-spin w-8 h-8" />
-      </div>
-    )
-  }
-
   if (messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-4xl mx-auto space-y-8 px-4">
@@ -256,6 +249,14 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     const isAssistant = message.role === "assistant"
 
     return message.parts.map((part, index) => {
+      if (queryResult.isLoading && isAssistant) {
+        return (
+          <div className="text-foreground">
+            <Loader variant="typing" size="lg" />
+          </div>
+        )
+      }
+
       if (part.type === "thinking") {
         return (
           <ThinkingMessage
