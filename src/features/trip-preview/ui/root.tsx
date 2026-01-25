@@ -1,6 +1,7 @@
 import { FlightOffers } from "@/features/flight-search/ui/flight-offers"
 import { getConversationById } from "@/services/conversation"
 import { buttonVariants } from "@/shared/ui/button"
+import { QueryErrorBoundary } from "@/shared/ui/query-error-boundary"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { TripItinerary } from "@/widgets/trip-planner/ui"
 import { useQuery } from "@tanstack/react-query"
@@ -36,18 +37,22 @@ function Dynamic() {
             className="overflow-auto max-h-[75vh] p-1"
             value="itineraryPlan"
           >
-            {store.itinerary && <TripItinerary data={store.itinerary} />}
+            <QueryErrorBoundary fallbackTitle="Failed to load itinerary">
+              {store.itinerary && <TripItinerary data={store.itinerary} />}
+            </QueryErrorBoundary>
           </TabsContent>
           <TabsContent
             className="overflow-auto max-h-[75vh] p-1"
             value="flightOffers"
           >
-            {store.offers && (
-              <FlightOffers
-                isExpired={store.isOffersExpired}
-                offers={store.offers}
-              />
-            )}
+            <QueryErrorBoundary fallbackTitle="Failed to load flight offers">
+              {store.offers && (
+                <FlightOffers
+                  isExpired={store.isOffersExpired}
+                  offers={store.offers}
+                />
+              )}
+            </QueryErrorBoundary>
           </TabsContent>
           <div className="flex justify-end">
             {store.tripId !== null ? (

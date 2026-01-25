@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/ui/dialog"
+import { ErrorFallback } from "@/shared/ui/error-fallback"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { createFileRoute } from "@tanstack/react-router"
@@ -42,7 +43,7 @@ function TripDetailsRoute() {
   const { tripId } = Route.useParams()
   const [variant, setVariant] = useState<Variant>("dashboard")
 
-  const { data: trip, isLoading } = useGetTripByIdQuery({
+  const { data: trip, isLoading, isError, error, refetch } = useGetTripByIdQuery({
     variables: {
       params: {
         tripId: Number.parseInt(tripId),
@@ -55,6 +56,18 @@ function TripDetailsRoute() {
       <div className="p-8">
         <Skeleton className="h-10 w-64 mb-8" />
         <Skeleton className="h-[400px] w-full rounded-3xl" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-8 max-w-md mx-auto">
+        <ErrorFallback
+          error={error}
+          title="Failed to load trip"
+          onRetry={() => refetch()}
+        />
       </div>
     )
   }

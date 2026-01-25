@@ -1,5 +1,6 @@
 import { useListUserTripsQuery } from "@/shared/queries/trip"
 import { Button } from "@/shared/ui/button"
+import { ErrorFallback } from "@/shared/ui/error-fallback"
 import {
   Select,
   SelectContent,
@@ -21,7 +22,7 @@ function TripListRoute() {
   const [bookedOnly, setBookedOnly] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  const { data, isLoading } = useListUserTripsQuery({
+  const { data, isLoading, isError, error, refetch } = useListUserTripsQuery({
     variables: {
       params: {
         status: statusFilter === "all" ? undefined : statusFilter,
@@ -74,6 +75,14 @@ function TripListRoute() {
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="aspect-4/3 rounded-3xl" />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="max-w-md mx-auto py-8">
+            <ErrorFallback
+              error={error}
+              title="Failed to load trips"
+              onRetry={() => refetch()}
+            />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 max-h-[75vh] overflow-y-auto">
