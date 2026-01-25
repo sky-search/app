@@ -3,19 +3,52 @@ import { useGetConversationListQuery } from "@/shared/queries/conversation"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
+import { Skeleton } from "@/shared/ui/skeleton"
 import { Link } from "@tanstack/react-router"
 import { History, MessageSquare, Search } from "lucide-react"
 import { useState } from "react"
+import { match } from "ts-pattern"
 import { NewChatButton } from "./new-chat-button"
+
+function ChatItemSkeleton() {
+  return (
+    <div className="px-4 py-3 rounded-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <Skeleton className="size-2 rounded-full shrink-0" />
+          <Skeleton className="h-4 w-full max-w-[140px]" />
+        </div>
+        <Skeleton className="h-3 w-12 shrink-0" />
+      </div>
+    </div>
+  )
+}
+
+function ChatListSkeleton() {
+  return (
+    <div className="space-y-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <ChatItemSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+function ChatListEmpty() {
+  return (
+    <div className="p-8 text-center space-y-2">
+      <div className="size-12 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto opacity-40">
+        <MessageSquare className="size-6 text-muted-foreground" />
+      </div>
+      <p className="text-xs text-muted-foreground">No chats found</p>
+    </div>
+  )
+}
 
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
-  const { data } = useGetConversationListQuery()
+  const queryResult = useGetConversationListQuery()
   const selectedChatId = null
-
-  const filteredChats = data?.conversations?.filter?.((chat) =>
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -49,54 +82,61 @@ export function ChatHistorySidebar() {
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             Recent Chats
           </div>
-          <ScrollArea className="max-h-[60vh] pb-6">
-            <ul>
-              {filteredChats?.map((chat) => (
-                <li key={chat.session_id} className="w-full">
-                  <Link
-                    key={chat.session_id}
-                    to="/chat/$chatId"
-                    preload="intent"
-                    params={{ chatId: chat.session_id }}
-                    className={cn(
-                      "w-full text-left px-4 py-3 rounded-xl transition-all group block",
-                      selectedChatId === chat.session_id
-                        ? "bg-primary/10 text-primary shadow-sm"
-                        : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={cn(
-                            "size-2 rounded-full",
-                            selectedChatId === chat.session_id
-                              ? "bg-primary"
-                              : "bg-muted-foreground/30 group-hover:bg-primary/50",
-                          )}
-                        />
-                        <span className="text-sm font-medium truncate">
-                          {chat.title}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
-                        {formatStringDate(chat.last_message_at ?? "")}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </ScrollArea>
 
-          {filteredChats?.length === 0 && (
-            <div className="p-8 text-center space-y-2">
-              <div className="size-12 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto opacity-40">
-                <MessageSquare className="size-6 text-muted-foreground" />
-              </div>
-              <p className="text-xs text-muted-foreground">No chats found</p>
-            </div>
-          )}
+          {match(queryResult)
+            .with({ isSuccess: true }, ({ data }) =>
+              match({
+                isEmpty: data.conversations.length === 0,
+                filteredChats: data.conversations.filter?.((chat) =>
+                  chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
+                ),
+              })
+                .with({ isEmpty: true }, () => <ChatListEmpty />)
+                .with({ isEmpty: false }, ({ filteredChats }) => (
+                  <ScrollArea className="max-h-[60vh] pb-6">
+                    <ul>
+                      {filteredChats.map((chat) => (
+                        <li key={chat.session_id} className="w-full">
+                          <Link
+                            key={chat.session_id}
+                            to="/chat/$chatId"
+                            preload="intent"
+                            params={{ chatId: chat.session_id }}
+                            className={cn(
+                              "w-full text-left px-4 py-3 rounded-xl transition-all group block",
+                              selectedChatId === chat.session_id
+                                ? "bg-primary/10 text-primary shadow-sm"
+                                : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
+                            )}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
+                                  className={cn(
+                                    "size-2 rounded-full",
+                                    selectedChatId === chat.session_id
+                                      ? "bg-primary"
+                                      : "bg-muted-foreground/30 group-hover:bg-primary/50",
+                                  )}
+                                />
+                                <span className="text-sm font-medium truncate">
+                                  {chat.title}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
+                                {formatStringDate(chat.last_message_at ?? "")}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </ScrollArea>
+                ))
+                .exhaustive(),
+            )
+            .with({ isLoading: true }, () => <ChatListSkeleton />)
+            .otherwise(() => null)}
         </div>
       </ScrollArea>
     </div>
