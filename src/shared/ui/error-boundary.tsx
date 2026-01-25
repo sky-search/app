@@ -43,9 +43,9 @@ export class ErrorBoundary extends Component<
     const { resetKeys: prevResetKeys } = prevProps
 
     if (resetKeys && prevResetKeys) {
-      const hasChanged = resetKeys.some(
-        (key, index) => key !== prevResetKeys[index]
-      )
+      const hasChanged =
+        resetKeys.length !== prevResetKeys.length ||
+        resetKeys.some((key, index) => key !== prevResetKeys[index])
       if (hasChanged) {
         this.reset()
       }
