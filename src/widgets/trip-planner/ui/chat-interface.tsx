@@ -194,8 +194,11 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     queryFn: async () => {
       const result = await getConversationById({ id: routeParams.chatId })
       if (result.isErr()) {
-        setMessages([])
-        return []
+        if (result.error?.status === 404) {
+          setMessages([])
+          return []
+        }
+        throw new Error(result.error.message)
       }
 
       if (result.value.flight_cards) {

@@ -51,7 +51,7 @@ export function ChatHistorySidebar() {
       <Separator className="bg-muted-foreground/5 mx-6 w-auto" />
 
       {/* Chat List */}
-      <ScrollArea className="flex-1 px-3 mt-4">
+      <ScrollArea className="flex-1 px-3 mt-4 max-h-[70vh]">
         <div className="space-y-1">
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             Recent Chats
