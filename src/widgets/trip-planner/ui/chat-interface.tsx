@@ -15,6 +15,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from "@/shared/ui/prompt-input"
+import { QueryErrorBoundary } from "@/shared/ui/query-error-boundary"
 import { ScrollButton } from "@/shared/ui/scroll-button"
 import { TextShimmer } from "@/shared/ui/text-shimmer"
 import type { MessagePart, UIMessage } from "@tanstack/ai-client"
@@ -93,14 +94,16 @@ export function ChatInterface() {
       <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
         <ChatContainerRoot className="h-full">
           <ChatContainerContent className="space-y-0 px-5 py-12">
-            <Messages
-              setMessages={setMessages}
-              messages={messages}
-              isLoading={isLoading}
-              sendMessage={sendMessage}
-              stop={stop}
-              {...chatUtils}
-            />
+            <QueryErrorBoundary fallbackTitle="Failed to load conversation">
+              <Messages
+                setMessages={setMessages}
+                messages={messages}
+                isLoading={isLoading}
+                sendMessage={sendMessage}
+                stop={stop}
+                {...chatUtils}
+              />
+            </QueryErrorBoundary>
           </ChatContainerContent>
           <div className="absolute bottom-4 left-1/2 flex w-full max-w-7xl -translate-x-1/2 justify-end px-5">
             <ScrollButton className="shadow-sm" />
@@ -184,7 +187,10 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     queryFn: async () => {
       const result = await getConversationById({ id: routeParams.chatId })
       if (result.isErr()) {
-        setMessages([])
+        if (result.error?.status === 404) {
+          setMessages([])
+          return []
+        }
         throw new Error(result.error.message)
       }
 

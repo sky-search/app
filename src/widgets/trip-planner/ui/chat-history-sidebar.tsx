@@ -1,11 +1,18 @@
 import { cn, formatStringDate } from "@/shared/lib/utils"
 import { useGetConversationListQuery } from "@/shared/queries/conversation"
+import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { Link } from "@tanstack/react-router"
-import { History, MessageSquare, Search } from "lucide-react"
+import {
+  AlertCircle,
+  History,
+  MessageSquare,
+  RefreshCw,
+  Search,
+} from "lucide-react"
 import { useState } from "react"
 import { match } from "ts-pattern"
 import { NewChatButton } from "./new-chat-button"
@@ -77,7 +84,7 @@ export function ChatHistorySidebar() {
       <Separator className="bg-muted-foreground/5 mx-6 w-auto" />
 
       {/* Chat List */}
-      <ScrollArea className="flex-1 px-3 mt-4">
+      <ScrollArea className="flex-1 px-3 mt-4 max-h-[70vh]">
         <div className="space-y-1">
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
             Recent Chats
