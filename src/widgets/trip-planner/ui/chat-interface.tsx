@@ -7,6 +7,7 @@ import {
   ChatContainerContent,
   ChatContainerRoot,
 } from "@/shared/ui/chat-container"
+import { Loader } from "@/shared/ui/loader"
 import { Message, MessageContent } from "@/shared/ui/message"
 import {
   PromptInput,
@@ -25,15 +26,7 @@ import {
 } from "@tanstack/ai-react"
 import { useQuery } from "@tanstack/react-query"
 import { getRouteApi, useParams } from "@tanstack/react-router"
-import {
-  AlertCircle,
-  ArrowUp,
-  Globe,
-  Loader2,
-  Mic,
-  RefreshCw,
-  Square,
-} from "lucide-react"
+import { ArrowUp, Globe, Mic, Square } from "lucide-react"
 import { useRef, useState } from "react"
 import { SuggestionList } from "./suggestion-list"
 import { ThinkingSteps } from "./thinking-steps"
@@ -237,42 +230,6 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     retry: false,
   })
 
-  if (queryResult.isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="animate-spin w-8 h-8" />
-      </div>
-    )
-  }
-
-  if (queryResult.isError) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center p-8">
-        <div className="flex flex-col items-center text-center space-y-4 max-w-md">
-          <div className="rounded-full bg-destructive/10 p-4">
-            <AlertCircle className="size-8 text-destructive" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold">
-              Failed to load conversation
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {queryResult.error?.message || "Something went wrong"}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => queryResult.refetch()}
-            className="gap-2"
-          >
-            <RefreshCw className="size-4" />
-            Try again
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   if (messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-4xl mx-auto space-y-8 px-4">
@@ -298,6 +255,17 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     const isAssistant = message.role === "assistant"
 
     return message.parts.map((part, index) => {
+      if (queryResult.isLoading && isAssistant) {
+        return (
+          <div
+            className="text-foreground"
+            key={`${message.id}-loading-${index}`}
+          >
+            <Loader variant="typing" size="lg" />
+          </div>
+        )
+      }
+
       if (part.type === "thinking") {
         return (
           <ThinkingMessage
