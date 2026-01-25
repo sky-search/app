@@ -14,6 +14,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from "@/shared/ui/prompt-input"
+import { QueryErrorBoundary } from "@/shared/ui/query-error-boundary"
 import { ScrollButton } from "@/shared/ui/scroll-button"
 import { TextShimmer } from "@/shared/ui/text-shimmer"
 import type { MessagePart, UIMessage } from "@tanstack/ai-client"
@@ -24,7 +25,15 @@ import {
 } from "@tanstack/ai-react"
 import { useQuery } from "@tanstack/react-query"
 import { getRouteApi, useParams } from "@tanstack/react-router"
-import { ArrowUp, Globe, Loader2, Mic, Square } from "lucide-react"
+import {
+  AlertCircle,
+  ArrowUp,
+  Globe,
+  Loader2,
+  Mic,
+  RefreshCw,
+  Square,
+} from "lucide-react"
 import { useRef, useState } from "react"
 import { SuggestionList } from "./suggestion-list"
 import { ThinkingSteps } from "./thinking-steps"
@@ -92,14 +101,16 @@ export function ChatInterface() {
       <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
         <ChatContainerRoot className="h-full">
           <ChatContainerContent className="space-y-0 px-5 py-12">
-            <Messages
-              setMessages={setMessages}
-              messages={messages}
-              isLoading={isLoading}
-              sendMessage={sendMessage}
-              stop={stop}
-              {...chatUtils}
-            />
+            <QueryErrorBoundary fallbackTitle="Failed to load conversation">
+              <Messages
+                setMessages={setMessages}
+                messages={messages}
+                isLoading={isLoading}
+                sendMessage={sendMessage}
+                stop={stop}
+                {...chatUtils}
+              />
+            </QueryErrorBoundary>
           </ChatContainerContent>
           <div className="absolute bottom-4 left-1/2 flex w-full max-w-7xl -translate-x-1/2 justify-end px-5">
             <ScrollButton className="shadow-sm" />
@@ -183,7 +194,10 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     queryFn: async () => {
       const result = await getConversationById({ id: routeParams.chatId })
       if (result.isErr()) {
-        setMessages([])
+        if (result.error?.status === 404) {
+          setMessages([])
+          return []
+        }
         throw new Error(result.error.message)
       }
 
@@ -227,6 +241,34 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    )
+  }
+
+  if (queryResult.isError) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-8">
+        <div className="flex flex-col items-center text-center space-y-4 max-w-md">
+          <div className="rounded-full bg-destructive/10 p-4">
+            <AlertCircle className="size-8 text-destructive" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">
+              Failed to load conversation
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {queryResult.error?.message || "Something went wrong"}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => queryResult.refetch()}
+            className="gap-2"
+          >
+            <RefreshCw className="size-4" />
+            Try again
+          </Button>
+        </div>
       </div>
     )
   }

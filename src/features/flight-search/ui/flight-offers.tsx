@@ -85,7 +85,12 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
           </ul>
         ))
         .with({ status: "pending" }, () => <FlightOffersPending />)
-        .with({ status: "error" }, () => <FlightOffersError />)
+        .with({ status: "error" }, (result) => (
+          <FlightOffersError
+            onRetry={() => result.refetch()}
+            errorMessage={result.error?.message}
+          />
+        ))
         .otherwise(() => null)}
     </section>
   );
