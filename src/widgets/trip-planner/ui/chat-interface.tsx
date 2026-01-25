@@ -251,7 +251,10 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
     return message.parts.map((part, index) => {
       if (queryResult.isLoading && isAssistant) {
         return (
-          <div className="text-foreground">
+          <div
+            className="text-foreground"
+            key={`${message.id}-loading-${index}`}
+          >
             <Loader variant="typing" size="lg" />
           </div>
         )
