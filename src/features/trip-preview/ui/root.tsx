@@ -34,7 +34,7 @@ function Dynamic() {
             <TabsTrigger value="flightOffers">Flight offers</TabsTrigger>
           </TabsList>
           <TabsContent
-            className="overflow-auto max-h-[75vh] p-1"
+            className="overflow-auto max-h-[90vh] p-1"
             value="itineraryPlan"
           >
             <QueryErrorBoundary fallbackTitle="Failed to load itinerary">
@@ -42,7 +42,7 @@ function Dynamic() {
             </QueryErrorBoundary>
           </TabsContent>
           <TabsContent
-            className="overflow-auto max-h-[75vh] p-1"
+            className="overflow-auto max-h-[90vh] p-1"
             value="flightOffers"
           >
             <QueryErrorBoundary fallbackTitle="Failed to load flight offers">
