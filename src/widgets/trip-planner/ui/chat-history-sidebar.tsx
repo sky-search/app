@@ -1,21 +1,84 @@
+import { queryClient } from "@/app/providers/tanstack-query/provider"
+import { CryptoIdGenerator } from "@/shared/lib/id-generator"
 import { cn, formatStringDate } from "@/shared/lib/utils"
-import { useGetConversationListQuery } from "@/shared/queries/conversation"
+import {
+  useDeleteConversationMutation,
+  useGetConversationListQuery,
+} from "@/shared/queries/conversation"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu"
 import { Input } from "@/shared/ui/input"
 import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
-import { Link } from "@tanstack/react-router"
-import { History, MessageSquare, Search } from "lucide-react"
+import { Link, useNavigate, useParams } from "@tanstack/react-router"
+import {
+  History,
+  MessageSquare,
+  MoreVertical,
+  Search,
+  Trash2,
+} from "lucide-react"
 import { useState } from "react"
 import { NewChatButton } from "./new-chat-button"
 
 export function ChatHistorySidebar() {
   const [searchQuery, setSearchQuery] = useState("")
   const { data } = useGetConversationListQuery()
-  const selectedChatId = null
+  const navigate = useNavigate()
+  const params = useParams({ strict: false })
+  const currentChatId = params.chatId as string | undefined
+  const deleteConversation = useDeleteConversationMutation()
 
   const filteredChats = data?.conversations?.filter?.((chat) =>
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  const handleDeleteChat = (sessionId: string) => {
+    const isActiveChat = currentChatId === sessionId
+
+    deleteConversation.mutate(
+      { id: sessionId },
+      {
+        onSuccess: () => {
+          // Update the conversation list cache
+          const query = useGetConversationListQuery
+          queryClient.setQueryData(query.getKey(), (prevData) => {
+            if (!prevData) return prevData
+            const updatedConversations = prevData.conversations.filter(
+              (chat) => chat.session_id !== sessionId,
+            )
+            return {
+              conversations: updatedConversations,
+              total: prevData.total - 1,
+            }
+          })
+
+          // If deleting the active chat, redirect to the first remaining chat
+          if (isActiveChat) {
+            const remainingChats = data?.conversations?.filter(
+              (chat) => chat.session_id !== sessionId,
+            )
+            if (remainingChats && remainingChats.length > 0) {
+              navigate({
+                to: "/chat/$chatId",
+                params: { chatId: remainingChats[0].session_id },
+              })
+            } else {
+              // new chat behavior here
+              navigate({
+                to: "/chat/$chatId",
+                params: { chatId: CryptoIdGenerator.new().generate() },
+              })
+            }
+          }
+        },
+      },
+    )
+  }
 
   return (
     <div className="flex flex-col h-full bg-transparent">
@@ -52,38 +115,57 @@ export function ChatHistorySidebar() {
           <ScrollArea className="max-h-[60vh] pb-6">
             <ul>
               {filteredChats?.map((chat) => (
-                <li key={chat.session_id} className="w-full">
+                <li
+                  key={chat.session_id}
+                  className="w-full group/item relative"
+                >
                   <Link
-                    key={chat.session_id}
                     to="/chat/$chatId"
                     preload="intent"
                     params={{ chatId: chat.session_id }}
                     className={cn(
-                      "w-full text-left px-4 py-3 rounded-xl transition-all group block",
-                      selectedChatId === chat.session_id
+                      "w-full text-left px-4 py-3 pr-10 rounded-xl transition-all group block",
+                      currentChatId === chat.session_id
                         ? "bg-primary/10 text-primary shadow-sm"
                         : "hover:bg-muted/50 text-foreground/70 hover:text-foreground",
                     )}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={cn(
-                            "size-2 rounded-full",
-                            selectedChatId === chat.session_id
-                              ? "bg-primary"
-                              : "bg-muted-foreground/30 group-hover:bg-primary/50",
-                          )}
-                        />
-                        <span className="text-sm font-medium truncate">
-                          {chat.title}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={cn(
+                          "size-2 rounded-full shrink-0",
+                          currentChatId === chat.session_id
+                            ? "bg-primary"
+                            : "bg-muted-foreground/30 group-hover:bg-primary/50",
+                        )}
+                      />
+                      <span className="text-sm font-medium truncate flex-1">
+                        {chat.title}
+                      </span>
                       <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums uppercase">
                         {formatStringDate(chat.last_message_at ?? "")}
                       </span>
                     </div>
                   </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className={cn(
+                        "absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-lg opacity-0 group-hover/item:opacity-100 transition-opacity hover:bg-muted/80 z-10",
+                        currentChatId === chat.session_id && "opacity-100",
+                      )}
+                    >
+                      <MoreVertical className="size-4 text-muted-foreground" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" side="bottom">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => handleDeleteChat(chat.session_id)}
+                      >
+                        <Trash2 className="size-4" />
+                        Delete chat
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </li>
               ))}
             </ul>

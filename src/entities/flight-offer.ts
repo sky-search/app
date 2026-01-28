@@ -10,7 +10,7 @@ export interface FlightOffer {
     logo_url: string
   }
   price: {
-    amount: number
+    total: number
     currency: string
     display: string
   }

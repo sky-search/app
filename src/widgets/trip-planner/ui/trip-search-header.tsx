@@ -1,13 +1,32 @@
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { Calendar, DollarSign, MapPin, Plus, Users } from "lucide-react"
+import { Calendar, DollarSign, MapPin, Plus } from "lucide-react"
 import { useState } from "react"
 
-export function TripSearchHeader() {
+export function TripSearchHeader({
+  setPrompt,
+}: {
+  setPrompt: (prompt: string) => void
+}) {
+  const [origin] = useState("London")
   const [destination, setDestination] = useState("")
-  const [dates, setDates] = useState("")
-  const [people, setPeople] = useState("2")
+  const [departureDate, setDepartureDate] = useState<string | undefined>(
+    undefined,
+  )
+  const [arrivalDate, setArrivalDate] = useState<string | undefined>(undefined)
   const [budget, setBudget] = useState("")
+
+  function handleCreatTrip() {
+    // let's create a custom prompt from destination, dates, people and budget information
+    // for now, create the prompt string and log it to the console
+    let prompt = "Create me a trip plan for 5 days. "
+    prompt += `Origin is ${origin}. `
+    prompt += `Destination is ${destination}. `
+    prompt += `Departure date is ${departureDate}. `
+    prompt += `Arrival date is ${arrivalDate}. `
+    prompt += `Budget is ${budget} USD. `
+    setPrompt(prompt)
+  }
 
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -29,24 +48,23 @@ export function TripSearchHeader() {
           <div className="relative flex-1 max-w-xs">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              type="text"
-              placeholder="When"
-              value={dates}
-              onChange={(e) => setDates(e.target.value)}
+              type="date"
+              placeholder="Departure date"
+              value={departureDate}
+              onChange={(e) => setDepartureDate(e.target.value)}
               className="pl-10 bg-muted/50 border-0"
             />
           </div>
 
-          {/* People */}
-          <div className="relative w-32">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          {/* When */}
+          <div className="relative flex-1 max-w-xs">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              type="number"
-              placeholder="2"
-              value={people}
-              onChange={(e) => setPeople(e.target.value)}
+              type="date"
+              placeholder="Arrival date"
+              value={arrivalDate}
+              onChange={(e) => setArrivalDate(e.target.value)}
               className="pl-10 bg-muted/50 border-0"
-              min="1"
             />
           </div>
 
@@ -64,7 +82,7 @@ export function TripSearchHeader() {
         </div>
 
         {/* Create a trip button */}
-        <Button className="gap-2 shrink-0">
+        <Button className="gap-2 shrink-0" onClick={handleCreatTrip}>
           <Plus className="size-4" />
           Create a trip
         </Button>

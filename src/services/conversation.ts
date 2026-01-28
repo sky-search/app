@@ -84,8 +84,8 @@ export async function getConversationList(
 export async function deleteConversation(
   payload: ApiRequestPayload<undefined, undefined> & { id: string },
 ) {
-  return await typeSafeRequest<undefined, undefined, { success: boolean }>({
-    url: `api/v1/conversations/${payload.id}`,
+  return await typeSafeRequest<undefined, undefined, void>({
+    url: `api/v1/chat/history/${payload.id}`,
     method: "delete",
     payload,
   });
