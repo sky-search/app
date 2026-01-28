@@ -1,26 +1,29 @@
 import {
   FLIGHT_OFFERS_REFRESH_INTERVAL,
   type FlightOffer,
-} from "@/entities/flight-offer"
-import { type SearchFlightSlice, searchFlights } from "@/services/duffel-search"
-import { createQuery } from "react-query-kit"
-import { match } from "ts-pattern"
-import { DataRefreshReminder } from "./data-refresh-reminder"
-import { FlightOfferCard } from "./flight-offer-card"
-import { FlightOfferList } from "./flight-offer-list"
-import { FlightOffersError } from "./flight-offers-error"
-import { FlightOffersPending } from "./flight-offers-pending"
+} from "@/entities/flight-offer";
+import {
+  type SearchFlightSlice,
+  searchFlights,
+} from "@/services/duffel-search";
+import { createQuery } from "react-query-kit";
+import { match } from "ts-pattern";
+import { DataRefreshReminder } from "./data-refresh-reminder";
+import { FlightOfferCard } from "./flight-offer-card";
+import { FlightOfferList } from "./flight-offer-list";
+import { FlightOffersError } from "./flight-offers-error";
+import { FlightOffersPending } from "./flight-offers-pending";
 
 interface FlightOffersProps {
-  offers: FlightOffer[]
-  isExpired: boolean
+  offers: FlightOffer[];
+  isExpired: boolean;
 }
 
 export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
   const queryResult = createQuery({
     queryKey: ["flight-offers"],
     fetcher: async () => {
-      const payloadSlices: SearchFlightSlice[] = []
+      const payloadSlices: SearchFlightSlice[] = [];
 
       offers.forEach((offer) => {
         offer.slices.forEach((slice) => {
@@ -29,9 +32,9 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
             departure_date: slice.departure.date,
             origin: slice.origin.code,
             destination: slice.destination.code,
-          })
-        })
-      })
+          });
+        });
+      });
 
       const result = await searchFlights({
         body: {
@@ -58,28 +61,30 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
             },
           ],
         },
-      })
+      });
 
-      if (result.isErr())
-        throw new Error(result.error.message, {
-          cause: result.error.detail,
-        })
-
-      if (result.value.offers.length === 0) {
-        return offers
+      if (result.isErr()) {
+        console.error("Failed to refresh flight offers:", result.error);
+        return offers;
       }
 
-      return result.value.offers
+      if (result.value.offers.length === 0) {
+        return offers;
+      }
+
+      return result.value.offers;
     },
     placeholderData: offers,
     refetchInterval: FLIGHT_OFFERS_REFRESH_INTERVAL,
     refetchOnWindowFocus: true,
-  })()
+  })();
 
   return (
     <section className="space-y-6">
       {match(isExpired)
-        .with(true, () => <DataRefreshReminder />)
+        .with(true, () => (
+          <DataRefreshReminder refreshData={queryResult.refetch} />
+        ))
         .otherwise(() => null)}
       {match(queryResult)
         .with({ status: "success" }, (result) => (
@@ -88,8 +93,13 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
           </ul>
         ))
         .with({ status: "pending" }, () => <FlightOffersPending />)
-        .with({ status: "error" }, () => <FlightOffersError />)
+        .with({ status: "error" }, (result) => (
+          <FlightOffersError
+            onRetry={() => result.refetch()}
+            errorMessage={result.error?.message}
+          />
+        ))
         .otherwise(() => null)}
     </section>
-  )
+  );
 }

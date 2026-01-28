@@ -1,7 +1,17 @@
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
-import { AlertCircleIcon } from "lucide-react"
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { AlertCircleIcon } from "lucide-react";
 
-export function DataRefreshReminder() {
+type Props = {
+  refreshData: () => void;
+};
+
+export function DataRefreshReminder(props: Props) {
   return (
     <Alert variant="default">
       <AlertCircleIcon />
@@ -15,6 +25,11 @@ export function DataRefreshReminder() {
           </li>
         </ul>
       </AlertDescription>
+      <AlertAction>
+        <Button size="xs" variant="default" onClick={() => props.refreshData()}>
+          Refresh
+        </Button>
+      </AlertAction>
     </Alert>
-  )
+  );
 }
