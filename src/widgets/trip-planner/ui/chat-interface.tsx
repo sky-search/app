@@ -28,8 +28,11 @@ import { useQuery } from "@tanstack/react-query"
 import { getRouteApi, useParams } from "@tanstack/react-router"
 import { ArrowUp, Globe, Mic, Square } from "lucide-react"
 import { useRef, useState } from "react"
+import { tripTemplates } from "../lib/templates"
 import { SuggestionList } from "./suggestion-list"
+import { TemplateGrid } from "./template-card"
 import { ThinkingSteps } from "./thinking-steps"
+import { TripSearchHeader } from "./trip-search-header"
 
 const routeApi = getRouteApi("/_app/chat/$chatId/")
 
@@ -90,7 +93,14 @@ export function ChatInterface() {
   }
 
   return (
-    <main className="flex h-[90vh] flex-col overflow-hidden">
+    <main className="flex h-[100vh] flex-col overflow-hidden">
+      <TripSearchHeader
+        setPrompt={(prompt) => {
+          setPrompt(prompt)
+          sendMessage(prompt)
+          setPrompt("")
+        }}
+      />
       <div ref={chatContainerRef} className="relative flex-1 overflow-y-auto">
         <ChatContainerRoot className="h-full">
           <ChatContainerContent className="space-y-0 px-5 py-12">
@@ -100,6 +110,7 @@ export function ChatInterface() {
                 messages={messages}
                 isLoading={isLoading}
                 sendMessage={sendMessage}
+                onTemplateSelect={setPrompt}
                 stop={stop}
                 {...chatUtils}
               />
@@ -110,7 +121,6 @@ export function ChatInterface() {
           </div>
         </ChatContainerRoot>
       </div>
-
       <div className="bg-background z-10 shrink-0 px-3 pb-3 md:px-5 md:pb-5">
         <div className="max-w-7xl mx-auto space-y-6">
           {status !== null && <TextShimmer duration={2}>{status}</TextShimmer>}
@@ -178,7 +188,12 @@ export function ChatInterface() {
   )
 }
 
-function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
+function Messages({
+  setMessages,
+  messages,
+  isLoading,
+  onTemplateSelect,
+}: UseChatReturn<any> & { onTemplateSelect: (prompt: string) => void }) {
   const { previewItinerary, previewOffers, setSearchInfo, setTripId, execute } =
     useTripPreview()
   const routeParams = routeApi.useParams()
@@ -247,6 +262,10 @@ function Messages({ setMessages, messages, isLoading }: UseChatReturn<any>) {
             </p>
           </div>
         </div>
+        <TemplateGrid
+          templates={tripTemplates}
+          onTemplateSelect={onTemplateSelect}
+        />
       </div>
     )
   }

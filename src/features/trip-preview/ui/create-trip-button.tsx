@@ -1,6 +1,6 @@
 import type { SearchInfo } from "@/entities/chat"
+import type { FlightOffer } from "@/entities/flight-offer"
 import { createTripMutation } from "@/features/create-trip"
-import type { FlightOffer } from "@/features/flight-search"
 import { notifyError, notifySuccess } from "@/services/notification"
 import { getCurrentUserFn } from "@/shared/lib/auth"
 import { Button } from "@/shared/ui/button"
@@ -36,11 +36,12 @@ export function CreateTripButton({ itinerary, searchInfo, sessionId }: Props) {
         destination_country_code: itinerary.country_code,
         destination_country: itinerary.country_code,
         currency: user.preferred_currency,
-        start_date: searchInfo.departure_date,
-        end_date: searchInfo.return_date,
+        start_date: "2026-02-01",
+        end_date: "2026-02-10",
         status: "planning",
         total_cost: itinerary.total_estimated_cost,
         session_id: sessionId,
+        vibe_tags: [],
       },
       {
         onSuccess(data) {

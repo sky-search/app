@@ -38,7 +38,16 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
 
       const result = await searchFlights({
         body: {
-          slices: payloadSlices,
+          slices: [
+            {
+              arrival_date: "2026-02-01",
+              departure_date: "2026-02-10",
+              // origin is london
+              origin: "LHR",
+              // destination is tashkent
+              destination: "TAS",
+            },
+          ],
           cabin_class: "economy",
           currency: "USD",
           max_connections: 1,
@@ -65,7 +74,6 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
 
       return result.value.offers;
     },
-    enabled: isExpired,
     placeholderData: offers,
     refetchInterval: FLIGHT_OFFERS_REFRESH_INTERVAL,
     refetchOnWindowFocus: true,
@@ -80,7 +88,7 @@ export function FlightOffers({ offers, isExpired }: FlightOffersProps) {
         .otherwise(() => null)}
       {match(queryResult)
         .with({ status: "success" }, (result) => (
-          <ul className="grid grid-cols-1 gap-4 w-full animate-in fade-in slide-in-from-bottom-4 duration-700 max-h-[60vh] overflow-auto">
+          <ul className="grid grid-cols-1 gap-4 w-full animate-in fade-in slide-in-from-bottom-4 duration-700 max-h-[80vh] sm:max-h-[70vh] md:max-h-[60vh] overflow-auto">
             <FlightOfferList offers={result.data} Presenter={FlightOfferCard} />
           </ul>
         ))

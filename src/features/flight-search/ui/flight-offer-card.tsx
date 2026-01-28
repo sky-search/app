@@ -124,7 +124,7 @@ export function FlightOfferCard({ offer, onSelect }: FlightOfferPresenter) {
         </div>
 
         {/* Footer: Price and CTA */}
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between border-t border-border/50 gap-4">
+        <div className="pt-4 flex flex-col justify-between border-t border-border/50 gap-4">
           <div className="flex items-center gap-4">
             <div className="space-y-0.5">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
@@ -135,7 +135,7 @@ export function FlightOfferCard({ offer, onSelect }: FlightOfferPresenter) {
                   {offer.price.currency}
                 </span>
                 <span className="text-3xl font-black tracking-tighter text-foreground">
-                  {offer.price.amount.toLocaleString()}
+                  {offer.price.total}
                 </span>
               </div>
             </div>
@@ -147,7 +147,7 @@ export function FlightOfferCard({ offer, onSelect }: FlightOfferPresenter) {
                 <Backpack
                   className={cn(
                     "size-3.5",
-                    offer.baggage.cabin.allowed
+                    offer.baggage?.cabin?.allowed
                       ? "text-emerald-500"
                       : "text-muted-foreground/50",
                   )}
@@ -158,7 +158,7 @@ export function FlightOfferCard({ offer, onSelect }: FlightOfferPresenter) {
                 <Briefcase
                   className={cn(
                     "size-3.5",
-                    offer.baggage.checked.allowed
+                    offer.baggage?.checked?.allowed
                       ? "text-emerald-500"
                       : "text-muted-foreground/50",
                   )}
