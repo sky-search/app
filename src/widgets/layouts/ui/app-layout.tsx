@@ -13,13 +13,12 @@ import {
 import { ModeToggle as ThemeToggleWidget } from "@/widgets/theme-toggle"
 import { ChatHistorySidebar } from "@/widgets/trip-planner/ui/chat-history-sidebar"
 import { Link, useLocation, useNavigate } from "@tanstack/react-router"
-import { Briefcase, Heart, MessageSquare, Sparkles } from "lucide-react"
+import { Briefcase, MessageSquare, Sparkles } from "lucide-react"
 import { type ReactNode, useState } from "react"
 
 const sidebarItems = [
   { icon: MessageSquare, label: "Chats", to: "/chat" },
   { icon: Briefcase, label: "Trips", to: "/trips" },
-  { icon: Heart, label: "Saved", to: "/saved" },
 ]
 
 function AppSidebar() {
