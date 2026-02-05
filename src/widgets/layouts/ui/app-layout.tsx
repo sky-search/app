@@ -13,13 +13,12 @@ import {
 import { ModeToggle as ThemeToggleWidget } from "@/widgets/theme-toggle"
 import { ChatHistorySidebar } from "@/widgets/trip-planner/ui/chat-history-sidebar"
 import { Link, useLocation, useNavigate } from "@tanstack/react-router"
-import { Briefcase, Heart, MessageSquare, Sparkles } from "lucide-react"
+import { Briefcase, MessageSquare, Sparkles } from "lucide-react"
 import { type ReactNode, useState } from "react"
 
 const sidebarItems = [
   { icon: MessageSquare, label: "Chats", to: "/chat" },
   { icon: Briefcase, label: "Trips", to: "/trips" },
-  { icon: Heart, label: "Saved", to: "/saved" },
 ]
 
 function AppSidebar() {
@@ -28,10 +27,10 @@ function AppSidebar() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative flex h-full">
+    <div className="relative flex h-full w-16! ">
       <Sidebar
-        collapsible="none"
-        className="w-[72px] border-r border-border bg-background z-50"
+        collapsible="icon"
+        className="w-16! border-r border-border bg-background z-50"
       >
         <SidebarHeader className="flex items-center justify-center py-6">
           <Link
@@ -53,14 +52,13 @@ function AppSidebar() {
               >
                 <SidebarMenuButton
                   isActive={location.pathname.includes(item.to)}
-                  className="size-12 rounded-xl justify-center"
                   onClick={() => {
                     navigate({ to: item.to })
                   }}
+                  tooltip={item.label}
                 >
-                  <div title={item.label}>
-                    <item.icon className="size-6" />
-                  </div>
+                  <item.icon className="" />
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -84,7 +82,7 @@ function AppSidebar() {
 
       <div
         className={cn(
-          "fixed left-[72px] top-0 bottom-0 z-40 transition-all duration-300 ease-in-out pointer-events-none",
+          "fixed left-[65px] top-0 bottom-0 z-40 transition-all duration-300 ease-in-out pointer-events-none",
           isChatsOpen
             ? "translate-x-0 opacity-100 pointer-events-auto"
             : "-translate-x-full opacity-0",

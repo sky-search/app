@@ -18,7 +18,7 @@ export const Route = createFileRoute("/auth/login")({
           <SignIn />
 
           <p className="text-muted-foreground text-center">
-            New on our platform?{" "}
+            Don't have an account?{" "}
             <Link
               to="/auth/signup"
               className="text-card-foreground hover:underline"

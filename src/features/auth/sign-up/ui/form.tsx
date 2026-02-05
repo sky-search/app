@@ -173,6 +173,7 @@ export function SignUpForm() {
               <Field data-invalid={isInvalid}>
                 <FieldLabel htmlFor={field.name}>Phone number</FieldLabel>
                 <PhoneInput
+                  defaultCountry="UZ"
                   id={field.name}
                   name={field.name}
                   value={field.state.value}
