@@ -27,10 +27,10 @@ function AppSidebar() {
   const navigate = useNavigate()
 
   return (
-    <div className="relative flex h-full">
+    <div className="relative flex h-full w-16! ">
       <Sidebar
         collapsible="icon"
-        className="border-r border-border bg-background z-50"
+        className="w-16! border-r border-border bg-background z-50"
       >
         <SidebarHeader className="flex items-center justify-center py-6">
           <Link
@@ -82,7 +82,7 @@ function AppSidebar() {
 
       <div
         className={cn(
-          "fixed left-[70px] top-0 bottom-0 z-40 transition-all duration-300 ease-in-out pointer-events-none",
+          "fixed left-[65px] top-0 bottom-0 z-40 transition-all duration-300 ease-in-out pointer-events-none",
           isChatsOpen
             ? "translate-x-0 opacity-100 pointer-events-auto"
             : "-translate-x-full opacity-0",
