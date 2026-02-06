@@ -1,6 +1,9 @@
+import { AirportSearch } from "@/features/airport-search/ui/input"
+import { getNearestAirport } from "@/services/airport"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
-import { Calendar, DollarSign, MapPin, Plus } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Calendar, DollarSign, Plus } from "lucide-react"
 import { useState } from "react"
 
 export function TripSearchHeader({
@@ -8,7 +11,19 @@ export function TripSearchHeader({
 }: {
   setPrompt: (prompt: string) => void
 }) {
-  const [origin] = useState("London")
+  const nearestAirportResult = useQuery({
+    queryKey: ["nearest-airport"],
+    queryFn: async () => {
+      const result = await getNearestAirport({})
+      if (result.isErr()) {
+        throw result.error
+      }
+      return result.value
+    },
+  })
+  const [origin, setOrigin] = useState(
+    nearestAirportResult?.data?.airport?.iata ?? "",
+  )
   const [destination, setDestination] = useState("")
   const [departureDate, setDepartureDate] = useState<string | undefined>(
     undefined,
@@ -33,16 +48,12 @@ export function TripSearchHeader({
       <div className="flex items-center gap-3 px-6 py-4">
         <div className="flex items-center gap-3 flex-1">
           {/* Where */}
-          <div className="relative flex-1 max-w-xs">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Where"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="pl-10 bg-muted/50 border-0"
-            />
-          </div>
+          <AirportSearch
+            value={origin}
+            onValueChange={(value) => {
+              setOrigin(value)
+            }}
+          />
 
           {/* When */}
           <div className="relative flex-1 max-w-xs">
