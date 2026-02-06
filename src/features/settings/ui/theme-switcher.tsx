@@ -1,6 +1,6 @@
+import { useTheme } from "@/app/providers/theme/provider"
 import { Button } from "@/shared/ui/button"
 import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
 
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme()
@@ -8,8 +8,10 @@ export function ThemeSwitcher() {
   return (
     <Button
       variant="ghost"
-      size="sm"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      size="icon"
+      onClick={() => {
+        setTheme(theme === "dark" ? "light" : "dark")
+      }}
       className="gap-2"
     >
       <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
