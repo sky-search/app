@@ -38,7 +38,17 @@ export async function getNearestAirport(
     undefined,
     undefined,
     {
-      airport: AirportResponse
+      airport: {
+        iata: string
+        icao_code: string | null
+        name: string
+        city: string
+        country: string
+        country_code: string
+        timezone: string
+        latitude: number | null
+        longitude: number | null
+      }
     }
   >({
     url: `api/v1/airports/nearest`,

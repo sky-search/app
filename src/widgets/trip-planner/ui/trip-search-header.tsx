@@ -24,7 +24,7 @@ export function TripSearchHeader({
   const [origin, setOrigin] = useState(
     nearestAirportResult?.data?.airport?.iata ?? "",
   )
-  const [destination, setDestination] = useState("")
+  const [destination] = useState("")
   const [departureDate, setDepartureDate] = useState<string | undefined>(
     undefined,
   )
